@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,15 @@ import { Label } from "../ui/label";
 import { MapPin } from "lucide-react";
 import MapView from "./MapView";
 import type { Location } from "../../types/location";
+
+// External API client for OpenStreetMap (no authentication needed)
+const osmClient = axios.create({
+  baseURL: "https://nominatim.openstreetmap.org",
+  timeout: 10000,
+  headers: {
+    "User-Agent": "LocationPickerApp/1.0",
+  },
+});
 
 interface LocationPickerDialogProps {
   onLocationSelect: (location: Location) => void;
@@ -87,17 +97,15 @@ export default function LocationPickerDialog({
       : countryQuery;
 
     try {
-        // TODO: changed to the axios
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?` +
-          `format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=en`,
-        {
-          headers: {
-            "User-Agent": "LocationPickerApp/1.0",
-          },
-        }
-      );
-      const data = await response.json();
+      const response = await osmClient.get("/search", {
+        params: {
+          format: "json",
+          q: query,
+          limit: 1,
+          "accept-language": "en",
+        },
+      });
+      const data = response.data;
       
       if (data.length > 0) {
         const result = data[0];
@@ -129,17 +137,15 @@ export default function LocationPickerDialog({
   // Handle coordinates input change
   const handleCoordinatesChange = async (lat: number, lng: number) => {
     try {
-      // TODO: changed to the axios
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?` +
-          `format=json&lat=${lat}&lon=${lng}&accept-language=en`,
-        {
-          headers: {
-            "User-Agent": "LocationPickerApp/1.0",
-          },
-        }
-      );
-      const data = await response.json();
+      const response = await osmClient.get("/reverse", {
+        params: {
+          format: "json",
+          lat: lat,
+          lon: lng,
+          "accept-language": "en",
+        },
+      });
+      const data = response.data;
       
       const location: Location = {
         id: Date.now().toString(),
@@ -184,17 +190,15 @@ export default function LocationPickerDialog({
   // Reverse geocoding when map is clicked
   const handleMapClick = async (lat: number, lng: number) => {
     try {
-        // TODO: changed to the axios
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?` +
-          `format=json&lat=${lat}&lon=${lng}&accept-language=en`,
-        {
-          headers: {
-            "User-Agent": "LocationPickerApp/1.0",
-          },
-        }
-      );
-      const data = await response.json();
+      const response = await osmClient.get("/reverse", {
+        params: {
+          format: "json",
+          lat: lat,
+          lon: lng,
+          "accept-language": "en",
+        },
+      });
+      const data = response.data;
       
       const location: Location = {
         id: Date.now().toString(),

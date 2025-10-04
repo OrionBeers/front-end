@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { ModeToggle } from "../themeProvider/mode-toggle";
 import {
   Sheet,
@@ -11,9 +11,12 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { Button } from "../ui/button";
+import { NavLink } from "react-router";
+import { useAuth } from "@/lib/auth.provider";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { logout } = useAuth();
 
   // TODO: Replace with actual navigation links
   const navigationLinks = [
@@ -67,27 +70,27 @@ export default function Header() {
               <SheetContent side="right" className="w-[240px] sm:w-[320px]">
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
-                  <SheetDescription>
+                  <SheetDescription className="sr-only">
                     Navigate to different sections of the page
                   </SheetDescription>
                 </SheetHeader>
-                <nav className="flex flex-col gap-2 mt-4">
+                <nav className="flex flex-col gap-2">
                   {navigationLinks.map((link) => (
-                    <a
+                    <NavLink
                       key={link.href}
-                      href={link.href}
+                      to={link.href}
                       onClick={() => setOpen(false)}
                       className="text-lg hover:opacity-80 transition-opacity py-2 px-2 rounded hover:bg-accent"
                     >
                       {link.label}
-                    </a>
+                    </NavLink>
                   ))}
                 </nav>
                 
                 {/* Mobile Mode Toggle */}
                 <SheetFooter className="border-t pt-4">
                   <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-medium">Theme</span>
+                    <Button variant="ghost" onClick={() => logout()} className="w-fit"><LogOut />Log out</Button>
                     <ModeToggle />
                   </div>
                 </SheetFooter>

@@ -1,19 +1,17 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import type { Location } from "../../types/location";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
-import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { MapPin } from "lucide-react";
 import MapView from "./MapView";
-import type { Location } from "../../types/location";
 
 // External API client for OpenStreetMap (no authentication needed)
 const osmClient = axios.create({
@@ -26,14 +24,15 @@ const osmClient = axios.create({
 
 interface LocationPickerDialogProps {
   onLocationSelect: (location: Location) => void;
-  trigger?: React.ReactNode;
+  open: boolean;
+  setOpen: (val: boolean) => void;
 }
 
 export default function LocationPickerDialog({
   onLocationSelect,
-  trigger,
+  open,
+  setOpen,
 }: LocationPickerDialogProps) {
-  const [open, setOpen] = useState(false);
   const [countryQuery, setCountryQuery] = useState("");
   const [regionQuery, setRegionQuery] = useState("");
   const [latitudeQuery, setLatitudeQuery] = useState("");
@@ -49,7 +48,7 @@ export default function LocationPickerDialog({
       setSkipSearchUpdate(false);
       return;
     }
-    
+
     const delayDebounce = setTimeout(() => {
       if (countryQuery.trim() || regionQuery.trim()) {
         searchAndSelectLocation();
@@ -67,18 +66,34 @@ export default function LocationPickerDialog({
       setSkipCoordinateUpdate(false);
       return;
     }
-    
+
     const delayDebounce = setTimeout(() => {
       const lat = parseFloat(latitudeQuery);
       const lng = parseFloat(longitudeQuery);
-      
+
       // Check if the parsed coordinates match the current location (to avoid re-triggering)
-      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-        const currentLat = selectedLocations.length > 0 ? parseFloat(selectedLocations[0].lat.toFixed(6)) : null;
-        const currentLng = selectedLocations.length > 0 ? parseFloat(selectedLocations[0].lng.toFixed(6)) : null;
-        
+      if (
+        !isNaN(lat) &&
+        !isNaN(lng) &&
+        lat >= -90 &&
+        lat <= 90 &&
+        lng >= -180 &&
+        lng <= 180
+      ) {
+        const currentLat =
+          selectedLocations.length > 0
+            ? parseFloat(selectedLocations[0].lat.toFixed(6))
+            : null;
+        const currentLng =
+          selectedLocations.length > 0
+            ? parseFloat(selectedLocations[0].lng.toFixed(6))
+            : null;
+
         // Only call handleCoordinatesChange if the coordinates have actually changed
-        if (currentLat !== parseFloat(lat.toFixed(6)) || currentLng !== parseFloat(lng.toFixed(6))) {
+        if (
+          currentLat !== parseFloat(lat.toFixed(6)) ||
+          currentLng !== parseFloat(lng.toFixed(6))
+        ) {
           handleCoordinatesChange(lat, lng);
         }
       }
@@ -106,13 +121,21 @@ export default function LocationPickerDialog({
         },
       });
       const data = response.data;
-      
+
       if (data.length > 0) {
         const result = data[0];
         const location: Location = {
           id: Date.now().toString(),
-          country: result.address?.country || result.display_name.split(",").pop()?.trim() || "Unknown",
-          region: result.address?.state || result.address?.city || result.address?.town || result.address?.village || result.display_name.split(",")[0],
+          country:
+            result.address?.country ||
+            result.display_name.split(",").pop()?.trim() ||
+            "Unknown",
+          region:
+            result.address?.state ||
+            result.address?.city ||
+            result.address?.town ||
+            result.address?.village ||
+            result.display_name.split(",")[0],
           lat: parseFloat(result.lat),
           lng: parseFloat(result.lon),
           displayName: result.display_name,
@@ -120,7 +143,7 @@ export default function LocationPickerDialog({
 
         setSelectedLocations([location]);
         onLocationSelect(location);
-        
+
         // Update coordinate fields and skip the coordinate useEffect
         setSkipCoordinateUpdate(true);
         setLatitudeQuery(location.lat.toFixed(6));
@@ -146,11 +169,17 @@ export default function LocationPickerDialog({
         },
       });
       const data = response.data;
-      
+
       const location: Location = {
         id: Date.now().toString(),
         country: data.address?.country || "Unknown",
-        region: data.address?.state || data.address?.city || data.address?.town || data.address?.village || data.display_name?.split(",")[0] || "Unknown",
+        region:
+          data.address?.state ||
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.display_name?.split(",")[0] ||
+          "Unknown",
         lat: lat,
         lng: lng,
         displayName: data.display_name,
@@ -158,7 +187,7 @@ export default function LocationPickerDialog({
 
       setSelectedLocations([location]);
       onLocationSelect(location);
-      
+
       // Update country and region fields and skip both search and coordinate updates
       setSkipCoordinateUpdate(true);
       setSkipSearchUpdate(true);
@@ -199,11 +228,17 @@ export default function LocationPickerDialog({
         },
       });
       const data = response.data;
-      
+
       const location: Location = {
         id: Date.now().toString(),
         country: data.address?.country || "Unknown",
-        region: data.address?.state || data.address?.city || data.address?.town || data.address?.village || data.display_name?.split(",")[0] || "Unknown",
+        region:
+          data.address?.state ||
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.village ||
+          data.display_name?.split(",")[0] ||
+          "Unknown",
         lat: parseFloat(data.lat),
         lng: parseFloat(data.lon),
         displayName: data.display_name,
@@ -212,7 +247,7 @@ export default function LocationPickerDialog({
       // Replace with only one location and notify parent (ONLY ONCE)
       setSelectedLocations([location]);
       onLocationSelect(location);
-      
+
       // Update all fields and skip both search and coordinate useEffects
       setSkipCoordinateUpdate(true);
       setSkipSearchUpdate(true);
@@ -222,7 +257,7 @@ export default function LocationPickerDialog({
       setLongitudeQuery(location.lng.toFixed(6));
     } catch (error) {
       console.error("Reverse geocoding error:", error);
-      
+
       // Even if reverse geocoding fails, add the location with coordinates
       const location: Location = {
         id: Date.now().toString(),
@@ -232,11 +267,11 @@ export default function LocationPickerDialog({
         lng: lng,
         displayName: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
       };
-      
+
       // Replace with only one location and notify parent (ONLY ONCE)
       setSelectedLocations([location]);
       onLocationSelect(location);
-      
+
       // Update all fields and skip both search and coordinate useEffects
       setSkipCoordinateUpdate(true);
       setSkipSearchUpdate(true);
@@ -249,90 +284,85 @@ export default function LocationPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-            // For Demo
-          <Button>
-            <MapPin className="mr-2 h-4 w-4" />
-            Picked your Location
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='w-[100%] max-w-[90vw] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Picked your Location</DialogTitle>
           <DialogDescription>
-            Enter country/region, coordinates, or latitude/longitude on the map to select your location
+            Enter country/region, coordinates, or latitude/longitude on the map
+            to select your location
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className='space-y-6'>
           {/* Search Section */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='country'>Country</Label>
               <Input
-                id="country"
-                placeholder="e.g. Canada, USA, France..."
+                id='country'
+                placeholder='e.g. Canada, USA, France...'
                 value={countryQuery}
                 onChange={(e) => setCountryQuery(e.target.value)}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="region">Region</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='region'>Region</Label>
               <Input
-                id="region"
-                placeholder="e.g. Vancouver, New York, Paris..."
+                id='region'
+                placeholder='e.g. Vancouver, New York, Paris...'
                 value={regionQuery}
                 onChange={(e) => setRegionQuery(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Coordinates Section */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">Latitude</Label>
-              <Input
-                id="latitude"
-                placeholder="e.g. 35.6762"
-                value={latitudeQuery}
-                onChange={(e) => setLatitudeQuery(e.target.value)}
-                type="number"
-                step="any"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="longitude">Longitude</Label>
-              <Input
-                id="longitude"
-                placeholder="e.g. 139.6503"
-                value={longitudeQuery}
-                onChange={(e) => setLongitudeQuery(e.target.value)}
-                type="number"
-                step="any"
-              />
-            </div>
-          </div>
-
           {/* Map Display */}
-          <div className="border rounded-lg overflow-hidden" style={{ height: "400px" }}>
-            <MapView 
-              locations={selectedLocations} 
+          <div
+            className='border rounded-lg overflow-hidden'
+            style={{ height: "400px" }}
+          >
+            <MapView
+              locations={selectedLocations}
               onMapClick={handleMapClick}
               clickable={true}
             />
           </div>
 
+          {/* Coordinates Section */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='latitude'>Latitude</Label>
+              <Input
+                id='latitude'
+                placeholder='e.g. 35.6762'
+                value={latitudeQuery}
+                onChange={(e) => setLatitudeQuery(e.target.value)}
+                type='number'
+                step='any'
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='longitude'>Longitude</Label>
+              <Input
+                id='longitude'
+                placeholder='e.g. 139.6503'
+                value={longitudeQuery}
+                onChange={(e) => setLongitudeQuery(e.target.value)}
+                type='number'
+                step='any'
+              />
+            </div>
+          </div>
+
           {/* Save Button */}
-          <div className="flex justify-end">
+          <div className='flex justify-end'>
             <Button
               onClick={() => setOpen(false)}
               disabled={selectedLocations.length === 0}
-              size="lg"
-              className="hover:opacity-90 transition-opacity"
+              size='lg'
+              className='hover:opacity-90 transition-opacity'
             >
               Save Location
             </Button>

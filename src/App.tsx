@@ -1,13 +1,11 @@
-import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
+import Header from "./components/layout/header";
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className='min-h-screen flex flex-col'>
       <Header />
-      <main className="flex-1">
-        <h1>Hi</h1>
-      </main>
+      <main className='flex-1 p-8'></main>
       <Footer />
     </div>
   );

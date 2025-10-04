@@ -8,6 +8,7 @@ import AboutUs from "./pages/aboutUs.tsx";
 import HomePage from "./pages/home.tsx";
 import Layout from "./pages/layout.tsx";
 import ProtectedRoute from "./pages/protected-route.tsx";
+import Dashboard from "./pages/dashboard.tsx";
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "/dashboard",
-            element: <div>Dashboard</div>,
+            element: <Dashboard />,
           },
           {
             path: "/about-us",

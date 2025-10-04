@@ -1,19 +1,11 @@
-import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
-import LocationPickerDialog from "./components/map/LocationPickerDialog";
+import Header from "./components/layout/header";
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className='min-h-screen flex flex-col'>
       <Header />
-      <main className="flex-1 p-8">
-        {/* TODO: delete when we finish the development */}
-        <LocationPickerDialog 
-          onLocationSelect={(location) => {
-            console.log("Selected location:", location);
-          }}
-        />
-      </main>
+      <main className='flex-1 p-8'></main>
       <Footer />
     </div>
   );

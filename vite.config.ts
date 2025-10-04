@@ -11,4 +11,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Permite imagens de domínios externos
+    __VITE_ALLOW_EXTERNAL_IMAGES__: true,
+  },
 });

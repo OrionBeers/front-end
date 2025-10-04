@@ -20,7 +20,7 @@ export default function Header() {
 
   // TODO: Replace with actual navigation links
   const navigationLinks = [
-    { href: "#about", label: "About us" },
+    { href: "/about-us", label: "About us" },
     { href: "#weather", label: "Weather Forecast" },
     { href: "#profile", label: "Profile" },
   ];

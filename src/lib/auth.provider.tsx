@@ -1,10 +1,10 @@
 import * as auth from "@/assets/scripts/auth";
+import { Toaster } from "@/components/ui/sonner";
 import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Outlet, redirect, useNavigate } from "react-router";
+import { Outlet, redirect } from "react-router";
 import { toast } from "sonner";
 import type { LoginSchema } from "./login.schema";
-import { Toaster } from "@/components/ui/sonner";
 
 type LoginParams =
   | { type: "credentials"; credentials: LoginSchema }
@@ -21,17 +21,9 @@ interface AuthContextType {
 const authContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = () => {
-  const navigate = useNavigate();
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState({} as User);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/");
-    } else {
-      navigate("/dashboard")
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     auth.onLoadUser().then((data) => {
@@ -41,7 +33,7 @@ export const AuthProvider = () => {
       } else {
         setIsAuthenticated(false);
       }
-      console.log({ data })
+      console.log({ data });
     });
   }, []);
 
@@ -81,7 +73,7 @@ export const AuthProvider = () => {
     const result = await auth.logOut();
     if (result) {
       setIsAuthenticated(false);
-      navigate("/");
+      
       return;
     }
   };

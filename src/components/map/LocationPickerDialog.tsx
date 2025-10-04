@@ -269,7 +269,7 @@ export default function LocationPickerDialog({
               <Label htmlFor="country">Country</Label>
               <Input
                 id="country"
-                placeholder="e.g. Japan, USA, France..."
+                placeholder="e.g. Canada, USA, France..."
                 value={countryQuery}
                 onChange={(e) => setCountryQuery(e.target.value)}
               />
@@ -279,7 +279,7 @@ export default function LocationPickerDialog({
               <Label htmlFor="region">Region</Label>
               <Input
                 id="region"
-                placeholder="e.g. Tokyo, New York, Paris..."
+                placeholder="e.g. Vancouver, New York, Paris..."
                 value={regionQuery}
                 onChange={(e) => setRegionQuery(e.target.value)}
               />

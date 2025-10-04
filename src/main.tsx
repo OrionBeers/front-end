@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import App from "./App.tsx";
+import { ThemeProvider } from "./components/themeProvider/theme-provider.tsx";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -13,6 +14,9 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />,
+    <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+    ,
   </StrictMode>
 );

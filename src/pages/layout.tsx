@@ -1,9 +1,17 @@
-import { Outlet } from "react-router"
+import Footer from "@/components/layout/footer";
+import Header from "@/components/layout/header";
+import { Outlet } from "react-router";
 
 const Layout = () => {
-  return <div>
-    <Outlet />
-  </div>
-}
+  return (
+    <div className='min-h-full'>
+      <Header />
+      <div className='min-h-[79vh] py-4 px-2'>
+        <Outlet />
+      </div>
+      <Footer />
+    </div>
+  );
+};
 
 export default Layout;

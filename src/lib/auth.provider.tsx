@@ -21,7 +21,6 @@ interface AuthContextType {
 const authContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = () => {
-  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState({} as User);
 

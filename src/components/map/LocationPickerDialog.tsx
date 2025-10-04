@@ -40,6 +40,7 @@ export default function LocationPickerDialog({
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
   const [skipCoordinateUpdate, setSkipCoordinateUpdate] = useState(false);
   const [skipSearchUpdate, setSkipSearchUpdate] = useState(false);
+  const [farmName, setFarmName] = useState("");
 
   // Auto-search when country or region changes
   useEffect(() => {
@@ -294,6 +295,12 @@ export default function LocationPickerDialog({
         </DialogHeader>
 
         <div className='space-y-6'>
+          <Input
+            name="farmName"
+            value={farmName}
+            onChange={(e) => setFarmName(e.target.value)}
+            placeholder="Farm name"
+          />
           {/* Search Section */}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='space-y-2'>

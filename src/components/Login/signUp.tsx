@@ -50,6 +50,11 @@ const SignUp = ({
           >
             <FormField
               control={form.control}
+              name='name'
+              render={({ field }) => <Input placeholder='Name' {...field} />}
+            />
+            <FormField
+              control={form.control}
               name='email'
               render={({ field }) => <Input placeholder='Email' {...field} />}
             />

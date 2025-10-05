@@ -40,6 +40,7 @@ export default function LocationPickerDialog({
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
   const [skipCoordinateUpdate, setSkipCoordinateUpdate] = useState(false);
   const [skipSearchUpdate, setSkipSearchUpdate] = useState(false);
+  const [farmName, setFarmName] = useState("");
 
   // Auto-search when country or region changes
   useEffect(() => {
@@ -286,46 +287,24 @@ export default function LocationPickerDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className='w-[100%] max-w-[90vw] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>Picked your Location</DialogTitle>
-          <DialogDescription>
-            Enter country/region, coordinates, or latitude/longitude on the map
-            to select your location
+          <DialogTitle>Pick your Location</DialogTitle>
+          <DialogDescription className='flex items-center gap-2'>
+            <small>
+              You can add your farm by locating it on the map or by pasting the
+              latitude and longitude of you farm directly in the inputs below.
+            </small>
           </DialogDescription>
         </DialogHeader>
 
         <div className='space-y-6'>
-          {/* Search Section */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='country'>Country</Label>
-              <Input
-                id='country'
-                placeholder='e.g. Canada, USA, France...'
-                value={countryQuery}
-                onChange={(e) => setCountryQuery(e.target.value)}
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='region'>Region</Label>
-              <Input
-                id='region'
-                placeholder='e.g. Vancouver, New York, Paris...'
-                value={regionQuery}
-                onChange={(e) => setRegionQuery(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Map Display */}
-          <div
-            className='border rounded-lg overflow-hidden'
-            style={{ height: "400px" }}
-          >
-            <MapView
-              locations={selectedLocations}
-              onMapClick={handleMapClick}
-              clickable={true}
+          <div className='space-y-2'>
+            <Label htmlFor='farmName'>Farm name</Label>
+            <Input
+              id='farmName'
+              name='farmName'
+              value={farmName}
+              onChange={(e) => setFarmName(e.target.value)}
+              placeholder='Farm name'
             />
           </div>
 
@@ -354,6 +333,41 @@ export default function LocationPickerDialog({
                 step='any'
               />
             </div>
+          </div>
+
+          {/* Search Section */}
+          {/* <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='country'>Country</Label>
+              <Input
+                id='country'
+                placeholder='e.g. Canada, USA, France...'
+                value={countryQuery}
+                onChange={(e) => setCountryQuery(e.target.value)}
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='region'>Region</Label>
+              <Input
+                id='region'
+                placeholder='e.g. Vancouver, New York, Paris...'
+                value={regionQuery}
+                onChange={(e) => setRegionQuery(e.target.value)}
+              />
+            </div>
+          </div> */}
+
+          {/* Map Display */}
+          <div
+            className='border rounded-lg overflow-hidden'
+            style={{ height: "400px" }}
+          >
+            <MapView
+              locations={selectedLocations}
+              onMapClick={handleMapClick}
+              clickable={true}
+            />
           </div>
 
           {/* Save Button */}

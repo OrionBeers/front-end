@@ -42,6 +42,20 @@ export default function LocationPickerDialog({
   const [skipSearchUpdate, setSkipSearchUpdate] = useState(false);
   const [farmName, setFarmName] = useState("");
 
+  // Reset all states when dialog opens
+  useEffect(() => {
+    if (open) {
+      setCountryQuery("");
+      setRegionQuery("");
+      setLatitudeQuery("");
+      setLongitudeQuery("");
+      setSelectedLocations([]);
+      setSkipCoordinateUpdate(false);
+      setSkipSearchUpdate(false);
+      setFarmName("");
+    }
+  }, [open]);
+
   // Auto-search when country or region changes
   useEffect(() => {
     // Skip if country/region were updated from map click or coordinate input
@@ -139,11 +153,10 @@ export default function LocationPickerDialog({
             result.display_name.split(",")[0],
           lat: parseFloat(result.lat),
           lng: parseFloat(result.lon),
-          displayName: result.display_name,
+          displayName: farmName || result.display_name,
         };
 
         setSelectedLocations([location]);
-        onLocationSelect(location);
 
         // Update coordinate fields and skip the coordinate useEffect
         setSkipCoordinateUpdate(true);
@@ -183,11 +196,10 @@ export default function LocationPickerDialog({
           "Unknown",
         lat: lat,
         lng: lng,
-        displayName: data.display_name,
+        displayName: farmName || data.display_name,
       };
 
       setSelectedLocations([location]);
-      onLocationSelect(location);
 
       // Update country and region fields and skip both search and coordinate updates
       setSkipCoordinateUpdate(true);
@@ -204,10 +216,9 @@ export default function LocationPickerDialog({
         region: "Unknown",
         lat: lat,
         lng: lng,
-        displayName: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        displayName: farmName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
       };
       setSelectedLocations([location]);
-      onLocationSelect(location);
       setSkipCoordinateUpdate(true);
       setSkipSearchUpdate(true);
       setCountryQuery("Unknown");
@@ -242,12 +253,11 @@ export default function LocationPickerDialog({
           "Unknown",
         lat: parseFloat(data.lat),
         lng: parseFloat(data.lon),
-        displayName: data.display_name,
+        displayName: farmName || data.display_name,
       };
 
-      // Replace with only one location and notify parent (ONLY ONCE)
+      // Replace with only one location
       setSelectedLocations([location]);
-      onLocationSelect(location);
 
       // Update all fields and skip both search and coordinate useEffects
       setSkipCoordinateUpdate(true);
@@ -266,12 +276,11 @@ export default function LocationPickerDialog({
         region: "Unknown",
         lat: lat,
         lng: lng,
-        displayName: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        displayName: farmName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
       };
 
-      // Replace with only one location and notify parent (ONLY ONCE)
+      // Replace with only one location
       setSelectedLocations([location]);
-      onLocationSelect(location);
 
       // Update all fields and skip both search and coordinate useEffects
       setSkipCoordinateUpdate(true);
@@ -280,6 +289,17 @@ export default function LocationPickerDialog({
       setRegionQuery("Unknown");
       setLatitudeQuery(lat.toFixed(6));
       setLongitudeQuery(lng.toFixed(6));
+    }
+  };
+
+  const handleSaveLocation = () => {
+    if (selectedLocations.length > 0) {
+      const locationToSave = {
+        ...selectedLocations[0],
+        displayName: farmName || selectedLocations[0].displayName,
+      };
+      onLocationSelect(locationToSave);
+      setOpen(false);
     }
   };
 
@@ -334,7 +354,6 @@ export default function LocationPickerDialog({
               />
             </div>
           </div>
-
           {/* Search Section */}
           {/* <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='space-y-2'>
@@ -373,7 +392,7 @@ export default function LocationPickerDialog({
           {/* Save Button */}
           <div className='flex justify-end'>
             <Button
-              onClick={() => setOpen(false)}
+              onClick={handleSaveLocation}
               disabled={selectedLocations.length === 0}
               size='lg'
               className='hover:opacity-90 transition-opacity'

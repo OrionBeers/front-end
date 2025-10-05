@@ -43,6 +43,19 @@ const Profile = () => {
         console.warn("API not available:", error);
         setProfile(null);
         setEditName("");
+        // TODO: delete after backend is ready
+        const profile: UserProfile = {
+            _id: user.uid,
+            email: user.email || "",
+            name: user.displayName || "User",
+            avatar: user.photoURL || "",
+            id_google: user.uid,
+            historical_data: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            locations: [],
+        };
+        setProfile(profile);
         toast.error("Failed to fetch profile data");
       } finally {
         setIsLoading(false);
@@ -83,6 +96,7 @@ const Profile = () => {
   };
 
   const handleStartEditing = () => {
+    setEditName(profile?.name || "");
     setEditLocations(profile?.locations || []);
     setIsEditing(true);
   };

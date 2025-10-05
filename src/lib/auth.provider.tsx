@@ -5,9 +5,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Outlet, redirect, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { SignUpSchema } from "./ signup.schema";
+import type { LoginSchema } from "./login.schema";
 
 type LoginParams =
-  | { type: "credentials"; credentials: SignUpSchema }
+  | { type: "credentials"; credentials: LoginSchema }
   | { type: "google" };
 
 interface AuthContextType {

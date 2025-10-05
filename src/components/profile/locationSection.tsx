@@ -10,7 +10,7 @@ interface LocationSectionProps {
   editLocations: Location[];
   onAddLocation: () => void;
   onRemoveLocation: (index: number) => void;
-  onStartEditing: () => void;
+  onStartEditingWithLocationPicker: () => void;
 }
 
 export const LocationSection = ({
@@ -19,13 +19,13 @@ export const LocationSection = ({
   editLocations,
   onAddLocation,
   onRemoveLocation,
-  onStartEditing
+  onStartEditingWithLocationPicker
 }: LocationSectionProps) => (
   <div className="space-y-2">
     <Label>Location</Label>
     {isEditing ? (
       // Edit mode
-          <div className="flex items-center gap-2 relative">
+      <div className="flex items-center gap-2 relative">
         {editLocations.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {editLocations.map((loc, idx) => (
@@ -39,13 +39,12 @@ export const LocationSection = ({
           </div>
         )}
         <Button 
-            onClick={onAddLocation}  
-            className="rounded-full w-8 h-8 flex items-center justify-center absolute top-0 right-0"
+          onClick={onAddLocation}  
+          className="rounded-full w-8 h-8 flex items-center justify-center absolute top-0 right-0"
         >
-            <Plus className="h-5 w-5" />
+          <Plus className="h-5 w-5" />
         </Button>
-        </div>
-    //   </div>
+      </div>
     ) : locations.length > 0 ? (
       // View mode - has locations
       <div className="space-y-2">
@@ -58,7 +57,7 @@ export const LocationSection = ({
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground">Not set</span>
         <Button 
-          onClick={onStartEditing}  
+          onClick={onStartEditingWithLocationPicker}  
           className="rounded-full w-8 h-8 flex items-center justify-center"
         >
           <Plus className="h-5 w-5" />

@@ -89,6 +89,7 @@ const Profile = () => {
 
   const handleAddLocation = () => {
     setShowLocationPicker(true);
+    setShowLocationPicker(true);
   };
 
   const handleRemoveLocation = (index: number) => {
@@ -99,6 +100,13 @@ const Profile = () => {
     setEditName(profile?.name || "");
     setEditLocations(profile?.locations || []);
     setIsEditing(true);
+  };
+
+  const handleStartEditingWithLocationPicker = () => {
+    setEditName(profile?.name || "");
+    setEditLocations(profile?.locations || []);
+    setIsEditing(true);
+    setShowLocationPicker(true);
   };
 
   const handleCancel = () => {
@@ -143,7 +151,7 @@ const Profile = () => {
             editLocations={editLocations}
             onAddLocation={handleAddLocation}
             onRemoveLocation={handleRemoveLocation}
-            onStartEditing={handleStartEditing}
+            onStartEditingWithLocationPicker={handleStartEditingWithLocationPicker}
           />
 
           {/* Action buttons */}

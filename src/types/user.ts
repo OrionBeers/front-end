@@ -9,14 +9,10 @@ type UserAuthResponse = {
   updated_at: string;
 };
 
+import type { Location } from "./location";
+
 type UserProfile = UserAuthResponse & {
-  location?: {
-    latitude: number;
-    longitude: number;
-    country?: string;
-    region?: string;
-    displayName?: string;
-  };
+  locations?: Location[];
 };
 
 export type { UserAuthResponse, UserProfile }

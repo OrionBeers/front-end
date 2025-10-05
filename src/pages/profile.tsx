@@ -19,7 +19,7 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [editName, setEditName] = useState("");
-  const [editLocation, setEditLocation] = useState<Location | null>(null);
+  const [editLocations, setEditLocations] = useState<Location[]>([]);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   // Fetch profile on mount
@@ -59,18 +59,12 @@ const Profile = () => {
   const handleSave = async () => {
     if (!profile) return;
 
+    const updateData: Partial<UserProfile> = { name: editName };
+    if (editLocations.length > 0) {
+      // Merge with existing locations if any
+      updateData.locations = [...(profile.locations || []), ...editLocations];
+    }
     try {
-      const updateData: Partial<UserProfile> = { name: editName };
-      if (editLocation) {
-        updateData.location = {
-          latitude: editLocation.lat,
-          longitude: editLocation.lng,
-          country: editLocation.country,
-          region: editLocation.region,
-          displayName: editLocation.displayName,
-        };
-      }
-
       const { data } = await axiosInstance.patch("/user/profile", updateData);
       setProfile(data);
       toast.success("Profile updated!");
@@ -83,15 +77,15 @@ const Profile = () => {
     }
   };
 
-  const locationToDisplay = (loc: UserProfile["location"]) => {
+  const locationToDisplay = (loc: Location | undefined) => {
     if (!loc) return null;
     return {
-      id: "current",
+      id: loc.id || "current",
       country: loc.country || "Unknown",
       region: loc.region || "Unknown",
-      lat: loc.latitude,
-      lng: loc.longitude,
-      displayName: loc.displayName || `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`,
+      lat: loc.lat,
+      lng: loc.lng,
+      displayName: loc.displayName || `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`,
     };
   };
 
@@ -107,7 +101,7 @@ const Profile = () => {
 
   if (!profile) return null;
 
-  const displayLocation = locationToDisplay(profile.location);
+  const displayLocations = (profile.locations || []).map(locationToDisplay);
 
   return (
     <div className="container mx-auto py-10 px-4 max-w-4xl">
@@ -142,25 +136,72 @@ const Profile = () => {
             <div className="text-lg text-muted-foreground">{profile.email}</div>
           </div>
 
-          {/* Location */}
+          {/* Location (multiple support) */}
           <div className="space-y-2">
             <Label>Location</Label>
             {isEditing ? (
               <>
-                <Button variant="outline" onClick={() => setShowLocationPicker(true)} className="w-full">
-                  {editLocation ? `${editLocation.region}, ${editLocation.country}` : "Pick Location"}
-                </Button>
-                {editLocation && (
-                  <div className="border rounded-lg overflow-hidden" style={{ height: "300px" }}>
-                    <MapView locations={[editLocation]} onMapClick={() => {}} clickable={false} />
-                  </div>
-                )}
+                <div className="space-y-2">
+                  {editLocations.length > 0 && (
+                    <div>
+                      {editLocations.map((loc, idx) => (
+                        <Card key={idx} className="mb-1 shadow-none border border-muted-foreground/10">
+                          <CardContent className="flex flex-col gap-0.5 px-4 py-1">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                {loc.displayName && (
+                                  <div className="text-sm font-semibold mb-0.5">{loc.displayName}</div>
+                                )}
+                                <div className="text-xs mb-0.5">{`${loc.region}, ${loc.country}`}</div>
+                                <div className="text-xs text-muted-foreground">Lat: {loc.lat}, Lng: {loc.lng}</div>
+                              </div>
+                              <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setEditLocations(editLocations.filter((_, i) => i !== idx))}>Remove</Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                  <Button variant="outline" onClick={() => setShowLocationPicker(true)} className="w-full">
+                    Add Location
+                  </Button>
+                </div>
               </>
-            ) : displayLocation ? (
+            ) : Array.isArray(profile.locations) && profile.locations.length > 0 ? (
               <div className="space-y-2">
-                <div className="text-lg">{`${displayLocation.region}, ${displayLocation.country}`}</div>
+                {profile.locations.map((loc, idx) => {
+                  const displayLoc = locationToDisplay(loc);
+                  if (!displayLoc) return null;
+                  return (
+                    <div key={idx} className="mb-4">
+                      {/* Farm name at the top */}
+                      {displayLoc.displayName && (
+                        <div className="text-lg font-bold mb-1">{displayLoc.displayName}</div>
+                      )}
+                      {/* Location info below */}
+                      <div className="text-md mb-1">{`${displayLoc.region}, ${displayLoc.country}`}</div>
+                      <div className="text-sm text-muted-foreground">Lat: {displayLoc.lat}, Lng: {displayLoc.lng}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : displayLocations.length > 0 ? (
+              <div className="space-y-2">
+                {displayLocations.filter(Boolean).map((loc, idx) => (
+                  loc ? (
+                    <div key={idx} className="mb-4">
+                      {/* Farm name at the top */}
+                      {loc.displayName && (
+                        <div className="text-lg font-bold mb-1">{loc.displayName}</div>
+                      )}
+                      {/* Location info below */}
+                      <div className="text-md mb-1">{`${loc.region}, ${loc.country}`}</div>
+                      <div className="text-sm text-muted-foreground">Lat: {loc.lat}, Lng: {loc.lng}</div>
+                    </div>
+                  ) : null
+                ))}
                 <div className="border rounded-lg overflow-hidden" style={{ height: "300px" }}>
-                  <MapView locations={[displayLocation]} onMapClick={() => {}} clickable={false} />
+                  <MapView locations={displayLocations.filter(Boolean) as Location[]} onMapClick={() => {}} clickable={false} />
                 </div>
               </div>
             ) : (
@@ -186,7 +227,9 @@ const Profile = () => {
       <LocationPickerDialog
         open={showLocationPicker}
         setOpen={setShowLocationPicker}
-        onLocationSelect={setEditLocation}
+        onLocationSelect={(loc) => {
+          setEditLocations((prev) => [...prev, loc]);
+        }}
       />
     </div>
   );

@@ -98,6 +98,7 @@ const SignUp = ({
                     <Button
                       variant='ghost'
                       size='link'
+                      type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
                       className='absolute right-3 top-1/2 -translate-y-1/2'
                     >
@@ -125,6 +126,7 @@ const SignUp = ({
                     <Button
                       variant='ghost'
                       size='link'
+                      type="button"
                       onClick={() => setShowConfirmPassword((prev) => !prev)}
                       className='absolute right-3 top-1/2 -translate-y-1/2'
                     >

@@ -251,9 +251,6 @@ const Dashboard = () => {
         </Card>
       )}</div>
       <LocationPickerDialog
-        onLocationSelect={(location) => {
-          console.log("Selected location:", location);
-        }}
         open={showOnboarding}
         setOpen={setShowOnboarding}
       />

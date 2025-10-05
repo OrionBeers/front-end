@@ -14,18 +14,20 @@ import {
 import { Form, FormField, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import MapView from "./MapView";
+import api from "@/lib/api.axios";
+import { useAuth } from "@/lib/auth.provider";
+import { toast } from "sonner";
 
 interface LocationPickerDialogProps {
-  onLocationSelect: (location: Location) => void;
   open: boolean;
   setOpen: (val: boolean) => void;
 }
 
 export default function LocationPickerDialog({
-  onLocationSelect,
   open,
   setOpen,
 }: LocationPickerDialogProps) {
+    const { user } = useAuth();
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
   const [skipCoordinateUpdate, setSkipCoordinateUpdate] = useState(false);
 
@@ -68,7 +70,6 @@ export default function LocationPickerDialog({
   // Handle location update (from coordinates input or map click)
   const handleLocationUpdate = (lat: number, lng: number) => {
     const location: Location = {
-      id: Date.now().toString(),
       lat: lat,
       lng: lng,
       displayName: farmName || `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
@@ -82,6 +83,24 @@ export default function LocationPickerDialog({
     form.setValue("longitude", location.lng.toFixed(6), {
       shouldValidate: true,
     });
+  };
+
+  const handleSaveLocation = async (data: LocationSchema) => {
+    try {
+      const params = { 
+        display_name: data.farmName, 
+        latitude: data.latitude,
+        longitude: data.longitude, 
+        id_user: user._id 
+      };
+      await api.post("/locations", params);
+      toast.success("Location saved successfully");
+      form.reset(); 
+      setOpen(false);
+    } catch (error) {
+      toast.error("Failed to save location");
+      console.error("Failed to save location:", error);
+    }
   };
 
   // Auto-update map when coordinates change
@@ -129,21 +148,6 @@ export default function LocationPickerDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitudeQuery, longitudeQuery]);
 
-  const handleSaveLocation = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) {
-      return;
-    }
-
-    if (selectedLocations.length > 0) {
-      const locationToSave = {
-        ...selectedLocations[0],
-        displayName: farmName || selectedLocations[0].displayName,
-      };
-      onLocationSelect(locationToSave);
-      setOpen(false);
-    }
-  };
 
   const handleDialogClose = (isOpen: boolean) => {
     setOpen(isOpen);

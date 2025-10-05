@@ -23,7 +23,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     // update logic to display if user doesn't have a location saved in the db
-    // setShowOnboarding(true);
+    setShowOnboarding(true);
+    setHistory([]);
   }, []);
 
   if (history.length === 0) {

@@ -7,6 +7,7 @@ const requiredConfig = {
   apiKey: firebaseConfig.apiKey,
   authDomain: firebaseConfig.authDomain,
   projectId: firebaseConfig.projectId,
+  databaseURL: firebaseConfig.databaseURL
 };
 
 const missingKeys = Object.entries(requiredConfig)

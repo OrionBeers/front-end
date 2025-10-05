@@ -1,18 +1,17 @@
+import { formatDate } from "@/lib/formatData";
 import { cn } from "@/lib/utils";
+import type { DashboardRequestDetails } from "@/types/dashboard";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import Calendar from "react-calendar";
 
 const StatusCalendar = ({
   list,
   onDaySelect,
+  activeStartDate
 }: {
-  list: {
-    [key: string]: {
-      date: Date;
-      status: number; // 0 to 1
-    }[];
-  };
+  list: DashboardRequestDetails["calendar"];
   onDaySelect?: (date: Date) => void;
+  activeStartDate: Date
 }) => {
   const getStatusForDay = (
     date: Date
@@ -23,16 +22,16 @@ const StatusCalendar = ({
 
     // Get month name (e.g., "january", "february")
     const monthName = date
-      .toLocaleDateString("en-US", { month: "long" })
+      .toLocaleDateString("pt-BR", { month: "long" })
+      // .toLocaleDateString("en-US", { month: "long" })
       .toLowerCase();
     const monthData = list[monthName as keyof typeof list];
 
     if (!monthData) return undefined;
 
     const dayData = monthData.find((item) => {
-      const itemDate = new Date(item.date);
-      const match = itemDate.toDateString() === date.toDateString();
-      return match;
+      const itemDate = new Date(formatDate(item.date));
+      return itemDate.toDateString() === date.toDateString();
     });
 
     if (!dayData) {
@@ -63,6 +62,7 @@ const StatusCalendar = ({
       nextLabel={<ChevronRight />}
       prev2Label={<ChevronsLeft />}
       next2Label={<ChevronsRight />}
+      defaultActiveStartDate={activeStartDate}
     />
   );
 };

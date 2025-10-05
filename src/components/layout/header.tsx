@@ -4,6 +4,7 @@ import { LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router";
 import { ModeToggle } from "../themeProvider/mode-toggle";
+import orionFarmerLogo from "@/assets/orion-farmer-logo.svg";
 import { Button } from "../ui/button";
 import {
   Sheet,
@@ -29,9 +30,14 @@ export default function Header() {
     <header className='bg-[#2196F3] text-black py-4 px-2 sm:px-4 border-b sticky top-0 z-50 dark:bg-[#2196F3]/90 dark:text-white backdrop-blur'>
       <div className='container mx-auto flex items-center justify-between'>
         {/* Logo */}
-        {/* TODO: Replace with actual logo image   */}
-        <NavLink to='/dashboard' className='text-lg sm:text-xl font-bold'>
-          LOGO
+        <NavLink to='/dashboard'>
+          <div className="rounded p-2 flex items-center">
+            <img
+              src={orionFarmerLogo}
+              alt="Orion Farmer Logo"
+              className="h-20 w-20 lg:h-24 lg:w-24"
+            />
+          </div>
         </NavLink>
 
         {/* Right side: Desktop Navigation + Actions */}

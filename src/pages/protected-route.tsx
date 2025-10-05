@@ -7,9 +7,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/");
-    }
+    if (!isAuthenticated) navigate("/");
   }, [isAuthenticated]);
 
   return <>{children}</>;

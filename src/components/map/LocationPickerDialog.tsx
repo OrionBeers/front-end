@@ -1,6 +1,9 @@
+import api from "@/lib/api.axios";
+import { useAuth } from "@/lib/auth.provider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import locationSchema, { type LocationSchema } from "../../lib/location.schema";
 import type { CreateLocation } from "../../types/location";
 import { Button } from "../ui/button";
@@ -14,9 +17,8 @@ import {
 import { Form, FormField, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import MapView from "./MapView";
-import api from "@/lib/api.axios";
-import { useAuth } from "@/lib/auth.provider";
-import { toast } from "sonner";
+import { onLoadUser, saveUserToLocalStorage } from "@/assets/scripts/auth";
+import type { UserAuthResponse } from "@/types/user";
 
 interface LocationPickerDialogProps {
   open: boolean;
@@ -27,8 +29,10 @@ export default function LocationPickerDialog({
   open,
   setOpen,
 }: LocationPickerDialogProps) {
-    const { user } = useAuth();
-  const [selectedLocations, setSelectedLocations] = useState<CreateLocation[]>([]);
+  const { user } = useAuth();
+  const [selectedLocations, setSelectedLocations] = useState<CreateLocation[]>(
+    []
+  );
   const [skipCoordinateUpdate, setSkipCoordinateUpdate] = useState(false);
 
   const form = useForm<LocationSchema>({
@@ -72,7 +76,8 @@ export default function LocationPickerDialog({
     const location: CreateLocation = {
       latitude: latitude,
       longitude: longitude,
-      display_name: farmName || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+      display_name:
+        farmName || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
     };
 
     setSelectedLocations([location]);
@@ -87,15 +92,23 @@ export default function LocationPickerDialog({
 
   const handleSaveLocation = async (data: LocationSchema) => {
     try {
-      const params = { 
-        display_name: data.farmName, 
+      const params = {
+        display_name: data.farmName,
         latitude: data.latitude,
-        longitude: data.longitude, 
-        id_user: user._id 
+        longitude: data.longitude,
+        id_user: user._id,
       };
       await api.post("/locations", params);
       toast.success("Location saved successfully");
-      form.reset(); 
+      form.reset();
+      if (user.is_onboarding) {
+        await api.patch(`/users?id_user=${user._id}`, {
+          is_onboarding: false,
+          id_user: user._id,
+        });
+        const updatedUser = await onLoadUser()
+        saveUserToLocalStorage(updatedUser! as UserAuthResponse)
+      }
       setOpen(false);
     } catch (error) {
       toast.error("Failed to save location");
@@ -148,13 +161,8 @@ export default function LocationPickerDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitudeQuery, longitudeQuery]);
 
-
-  const handleDialogClose = (isOpen: boolean) => {
-    setOpen(isOpen);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className='w-[100%] max-w-[90vw] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Pick your Location</DialogTitle>
@@ -249,7 +257,7 @@ export default function LocationPickerDialog({
             </div>
             <div className='flex justify-end'>
               <Button
-                type="submit"
+                type='button'
                 disabled={
                   selectedLocations.length === 0 ||
                   !farmName.trim() ||
@@ -258,6 +266,7 @@ export default function LocationPickerDialog({
                 }
                 size='lg'
                 className='hover:opacity-90 transition-opacity'
+                onClick={form.handleSubmit(handleSaveLocation)}
               >
                 Save Location
               </Button>

@@ -38,6 +38,7 @@ export const LocationSection = ({
 
       <Button
         onClick={onAddLocation}
+        type="button"
         className='rounded-full w-8 h-8 flex items-center justify-center absolute top-0 right-0'
       >
         <Plus className='h-5 w-5' />

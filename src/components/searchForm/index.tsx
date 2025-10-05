@@ -62,9 +62,13 @@ const SearchForm = ({
   });
 
   useEffect(() => {
-    fetchLocations().then(data => {
-      if (data) setLocations(data);
-    })
+    fetchLocations()
+      .then((data) => {
+        if (data) setLocations(data);
+      })
+      .catch(() => {
+        setLocations([]);
+      });
   }, []);
 
   const onSubmit = async (data: SearchSchema) => {
@@ -82,7 +86,6 @@ const SearchForm = ({
       start_month: data.month,
     };
     const { data: result } = await api.post("/prediction", body);
-    console.log("Search result:", result);
     onSearch?.(result.id_request);
   };
 
@@ -119,7 +122,25 @@ const SearchForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value='farm1'>Farm 1</SelectItem>
+                    {locations.length === 0 ? (
+                      <p className='p-4 text-sm text-center'>
+                        You don&apos;t have any farm registered yet.
+                        <br />
+                        <Button
+                          variant='link'
+                          size='link'
+                          onClick={() => setOpenLocation(true)}
+                        >
+                          Start now!
+                        </Button>
+                      </p>
+                    ) : (
+                      locations.map((loc) => (
+                        <SelectItem key={loc._id} value={loc._id}>
+                          {loc.display_name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </FormItem>

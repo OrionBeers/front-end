@@ -73,7 +73,7 @@ const SearchForm = ({
       crop_type: data.crop,
       start_month: data.month,
     };
-    const { data: result } = await api.post("/publish", body);
+    const { data: result } = await api.post("/prediction", body);
     console.log("Search result:", result);
     onSearch?.(result.id_request);
   };

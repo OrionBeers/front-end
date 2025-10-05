@@ -56,7 +56,7 @@ const StatusCalendar = ({
       }}
       minDate={new Date()}
       className={cn(
-        "mx-auto w-fit max-w-[500px] mt-10 border border-border rounded-lg overflow-hidden"
+        "mx-auto w-[500px] max-w-[100%] mt-10 border border-border rounded-lg overflow-hidden"
       )}
       onClickDay={onDaySelect}
       prevLabel={<ChevronLeft />}

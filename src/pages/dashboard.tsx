@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { listenToHistory } from "@/lib/realtimeDatabase";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -35,6 +36,17 @@ const Dashboard = () => {
     setShowOnboarding(true);
     setHistory([]);
   }, []);
+
+  useEffect(() => {
+    // NOTE: this is sample of real-time updates using Firebase Realtime Database
+    listenToHistory({
+      idUser:"68e227d4b6b525ab5a1fbd24",
+      idRequest:"68e248a29e37f1d9e4810f21",
+      onUpdate: (data) => {
+        console.log("Real-time data update:", data);
+      },
+    });
+  },[])
 
   if (history.length !== 0) {
     return (

@@ -1,9 +1,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormField, FormLabel, FormMessage } from "@/components/ui/form";
-import type { UserProfile } from "@/types/user";
 import type { ProfileSchema } from "@/lib/profile.schema";
+import type { UserProfile } from "@/types/user";
 import { useForm } from "react-hook-form";
 
 interface ProfileHeaderProps {
@@ -17,7 +23,7 @@ export const ProfileHeader = ({
   isEditing,
   form,
 }: ProfileHeaderProps) => (
-  <div className='flex items-center gap-6 mb-6'>
+  <div className='flex flex-col md:flex-row items-center gap-6 mb-6'>
     {/* Avatar */}
     <div className='flex justify-center'>
       <Avatar className='h-32 w-32'>
@@ -32,23 +38,34 @@ export const ProfileHeader = ({
         control={form.control}
         name='name'
         render={({ field }) => (
-          <div className='space-y-2'>
+          <FormItem className='space-y-2'>
             <FormLabel htmlFor='name'>Name</FormLabel>
-            <Input
-              id='name'
-              {...field}
-              readOnly={!isEditing}
-            />
+            <FormControl>
+              <Input id='name' {...field} readOnly={!isEditing} />
+            </FormControl>
             <FormMessage />
-          </div>
+          </FormItem>
         )}
       />
 
       {/* Email field */}
-      <div className='space-y-2'>
-        <Label>Email</Label>
-        <Input value={profile.email} readOnly className='bg-muted' disabled />
-      </div>
+      <FormField
+        control={form.control}
+        name='email'
+        render={({ field }) => (
+          <FormItem className='space-y-2'>
+            <Label>Email</Label>
+            <FormControl>
+              <Input
+                value={field.value}
+                readOnly
+                className='bg-muted'
+                disabled
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
     </div>
   </div>
 );

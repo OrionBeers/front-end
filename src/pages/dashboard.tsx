@@ -61,22 +61,21 @@ const Dashboard = () => {
     const { data } = await api.get(`/dashboard?id_user=${user._id}`);
     setRequests(data || []);
     if (data.length) await fetchCrop(data[0]?._id);
-    setIsLoading(false);
+
   };
 
   const fetchLocations = async () => {
     const { data } = await api.get(`/locations?id_user=${user._id}`);
-    console.log("Fetched locations:", data);
-    if (!data.length) {
-      setShowOnboarding(true);
-      return;
-    }
     return data;
   };
 
   useEffect(() => {
-    fetchRequests();
-    fetchLocations();
+    if (user.is_onboarding) {
+      setShowOnboarding(true);
+    }
+    fetchRequests().then(() => {
+      setIsLoading(false);
+    });
   }, []);
 
   // useEffect(() => {
@@ -152,7 +151,7 @@ const Dashboard = () => {
         </Dialog>
       </div>
       <div className='max-w-[100%] flex flex-wrap items-center justify-center gap-5 transition-all'>
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode='popLayout'>
           <motion.div
             key={"calendar-card"}
             className='w-full md:w-auto'
@@ -163,7 +162,7 @@ const Dashboard = () => {
             exit={{ x: -20 }}
             transition={{ duration: 0.6 }}
             style={{
-              zIndex:1
+              zIndex: 1,
             }}
           >
             {isLoadingCalendar ? (
@@ -206,18 +205,18 @@ const Dashboard = () => {
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.5 }}
               style={{
-                zIndex: 0
+                zIndex: 0,
               }}
             >
-              <DetailsCard selectedDate={selectedDate} />
+              <DetailsCard
+                selectedDate={selectedDate}
+                onClose={() => setSelectedDate(null)}
+              />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-      <LocationPickerDialog
-        open={showOnboarding}
-        setOpen={setShowOnboarding}
-      />
+      <LocationPickerDialog open={showOnboarding} setOpen={setShowOnboarding} />
     </div>
   );
 };

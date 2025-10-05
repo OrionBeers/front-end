@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { saveUserToLocalStorage } from "@/assets/scripts/auth";
 import LocationPickerDialog from "@/components/map/LocationPickerDialog";
 import { LocationSection } from "@/components/profile/locationSection";
 import { ProfileHeader } from "@/components/profile/profileInfo";
@@ -6,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import api from "@/lib/api.axios";
 import { useAuth } from "@/lib/auth.provider";
-import ProfileSchema, {
+import profileSchema, {
   type ProfileSchema as ProfileFormSchema,
 } from "@/lib/profile.schema";
 import type { Location } from "@/types/location";
@@ -16,21 +18,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-const defaultProfile: UserProfile = {
-  _id: "",
-  email: "",
-  name: "User",
-  avatar: "",
-  id_google: "",
-  historical_data: [],
-  created_at: "",
-  updated_at: "",
-  locations: [],
-};
-
 const Profile = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(user);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [editLocations, setEditLocations] = useState<Location[]>([]);
@@ -38,51 +28,46 @@ const Profile = () => {
 
   const form = useForm<ProfileFormSchema>({
     defaultValues: {
-      name: "",
+      name: profile?.name,
+      email: profile?.email,
     },
-    resolver: zodResolver(ProfileSchema),
-    mode: "onChange",
+    resolver: zodResolver(profileSchema),
   });
 
   const fetchLocations = async () => {
-    const { data } = await api.get(`/locations?id_user=${user._id}`);
-    console.log("Fetched locations:", data);
-    if (!data.length) {
+    try {
+      const { data } = await api.get(`/locations?id_user=${user._id}`);
+      if (!data.length) {
+        return [];
+      }
+      return data;
+    } catch (e) {
+      console.log(e);
       return [];
     }
-    return data;
   };
 
   // Fetch profile on mount
-  useEffect(() => {
+  const fetchProfile = async () => {
     if (!user) return;
 
-    const fetchProfile = async () => {
-      try {
-        const data = await fetchLocations();
-        const { data: profile } = await api.get("/users", {
-          params: { email: user.email, id_user: user._id },
-        });
-        const fetchedProfile = {
-          ...profile,
-          avatar: user.avatar || "",
-          locations: data,
-        };
-        setProfile(fetchedProfile);
-        form.reset({ name: profile.name });
-        setEditLocations(data);
-      } catch (error) {
-        console.warn("API not available:", error);
-        setProfile(null);
-        // TODO: delete after backend is ready
-        setProfile(defaultProfile);
-        form.reset({ name: defaultProfile.name });
-        toast.error("Failed to fetch profile data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    try {
+      const data = await fetchLocations();
+      const fetchedProfile = {
+        ...user,
+        locations: data,
+      };
+      setProfile(fetchedProfile);
+      setEditLocations(data);
+    } catch (error) {
+      console.warn("API not available:", error);
+      toast.error("Failed to fetch profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, [user, form]);
 
@@ -108,19 +93,21 @@ const Profile = () => {
 
     const updateData: Partial<UserProfile> = {
       name: data.name,
-      email: profile.email,
+      email: data.email,
+      is_onboarding: false,
     };
 
     try {
       const { data: updatedProfile } = await api.patch("/users", updateData);
+      saveUserToLocalStorage(updatedProfile);
       setProfile(updatedProfile);
       toast.success("Profile updated!");
     } catch (error) {
       console.warn("API not available:", error);
-      setProfile({ ...profile, ...updateData });
       toast.error("Failed to update profile", {
         description: (error as Error)?.message,
       });
+    } finally {
       setIsEditing(false);
     }
   };
@@ -145,13 +132,11 @@ const Profile = () => {
   };
 
   const handleStartEditing = () => {
-    form.reset({ name: profile?.name || "" });
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    form.reset({ name: profile?.name || "" });
   };
 
   if (isLoading) {

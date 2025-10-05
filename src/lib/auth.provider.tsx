@@ -33,7 +33,7 @@ export const AuthProvider = () => {
         setIsAuthenticated(false);
       } else {
         setIsAuthenticated(true);
-        setUser(data);
+        setUser(data as UserAuthResponse);
         navigate("/dashboard");
       }
     });

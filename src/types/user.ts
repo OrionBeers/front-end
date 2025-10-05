@@ -4,9 +4,9 @@ type UserAuthResponse = {
   email: string;
   id_google: string;
   avatar: string;
-  historical_data: [];
   created_at: string;
   updated_at: string;
+  is_onboarding: boolean;
 };
 
 import type { Location } from "./location";

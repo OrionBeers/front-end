@@ -24,8 +24,8 @@ const addUserToDB = async (user: User) => {
       uid: user.uid,
       name: user.displayName,
     });
-    if (data._id) {
-      return data as UserAuthResponse;
+    if (data.status === "created") {
+      return getUserFromDB(data.email as string);
     }
     return null;
   } catch (e) {
@@ -44,14 +44,14 @@ const getUserFromDB = async (email: string) => {
         return (status >= 200 && status < 300) || status === 404;
       },
     });
-    if (data._id) return data;
+    if (data._id) return data as UserAuthResponse;
     return null;
   } catch (e) {
     console.log(e);
   }
 };
 
-const saveUserToLocalStorage = (dbUser: UserAuthResponse) => {
+export const saveUserToLocalStorage = (dbUser: UserAuthResponse) => {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(dbUser));
 };
 

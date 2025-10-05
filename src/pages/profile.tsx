@@ -1,13 +1,17 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import LocationPickerDialog from "@/components/map/LocationPickerDialog";
 import { LocationSection } from "@/components/profile/locationSection";
 import { ProfileHeader } from "@/components/profile/profileInfo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 import api from "@/lib/api.axios";
 import { useAuth } from "@/lib/auth.provider";
+import ProfileSchema, { type ProfileSchema as ProfileFormSchema } from "@/lib/profile.schema";
 import type { Location } from "@/types/location";
 import type { UserProfile } from "@/types/user";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 const defaultProfile: UserProfile = {
@@ -27,11 +31,16 @@ const Profile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [editName, setEditName] = useState("");
-  const [editLocations, setEditLocations] = useState<Location[]>(
-    () => profile?.locations || []
-  );
+  const [editLocations, setEditLocations] = useState<Location[]>([]);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+
+  const form = useForm<ProfileFormSchema>({
+    defaultValues: {
+      name: "",
+    },
+    resolver: zodResolver(ProfileSchema),
+    mode: "onChange",
+  });
 
   // Fetch profile on mount
   useEffect(() => {
@@ -50,18 +59,20 @@ const Profile = () => {
         const { data: profile } = await api.get("/users", {
           params: { email: user.email, id_user: user._id },
         });
-        setProfile({
+        const fetchedProfile = {
           ...profile,
           avatar: user.avatar || "",
           locations: data,
-        });
-        setEditName(profile.name);
+        };
+        setProfile(fetchedProfile);
+        form.reset({ name: profile.name });
+        setEditLocations(data);
       } catch (error) {
         console.warn("API not available:", error);
         setProfile(null);
-        setEditName("");
         // TODO: delete after backend is ready
         setProfile(defaultProfile);
+        form.reset({ name: defaultProfile.name });
         toast.error("Failed to fetch profile data");
       } finally {
         setIsLoading(false);
@@ -69,7 +80,7 @@ const Profile = () => {
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, form]);
 
   useEffect(() => {
     if (
@@ -79,21 +90,26 @@ const Profile = () => {
     ) {
       setEditLocations(profile?.locations || []);
     }
-  }, [profile]);
+  }, [profile, editLocations]);
 
-  const handleSave = async () => {
+  const handleSave = async (data: ProfileFormSchema) => {
     if (!profile) return;
 
+    const isValid = await form.trigger();
+    if (!isValid) {
+      return;
+    }
+
     const updateData: Partial<UserProfile> = {
-      name: editName,
+      name: data.name,
       email: profile.email,
       // edit locations separate (it's a different endpoint)
       // locations: editLocations,
     };
 
     try {
-      const { data } = await api.patch("/users", updateData);
-      setProfile(data);
+      const { data: updatedProfile } = await api.patch("/users", updateData);
+      setProfile(updatedProfile);
       toast.success("Profile updated!");
     } catch (error) {
       console.warn("API not available:", error);
@@ -101,7 +117,6 @@ const Profile = () => {
       toast.error("Failed to update profile", {
         description: (error as Error)?.message,
       });
-    } finally {
       setIsEditing(false);
     }
   };
@@ -116,13 +131,13 @@ const Profile = () => {
   };
 
   const handleStartEditing = () => {
-    setEditName(profile?.name || "");
+    form.reset({ name: profile?.name || "" });
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setEditName(profile?.name || "");
+    form.reset({ name: profile?.name || "" });
   };
 
   if (isLoading) {
@@ -146,29 +161,32 @@ const Profile = () => {
         </CardHeader>
 
         <CardContent className='space-y-6'>
-          <ProfileHeader
-            profile={profile}
-            isEditing={isEditing}
-            editName={editName}
-            onNameChange={setEditName}
-          />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+              <ProfileHeader
+                profile={profile}
+                isEditing={isEditing}
+                form={form}
+              />
 
-          <LocationSection
-            isEditing={isEditing}
-            editLocations={editLocations}
-            onAddLocation={handleAddLocation}
-            onRemoveLocation={handleRemoveLocation}
-          />
+              <LocationSection
+                isEditing={isEditing}
+                editLocations={editLocations}
+                onAddLocation={handleAddLocation}
+                onRemoveLocation={handleRemoveLocation}
+              />
 
-          {/* Action buttons */}
-          {isEditing && (
-            <div className='flex gap-4 justify-end pt-4'>
-              <Button variant='outline' onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave}>Save</Button>
-            </div>
-          )}
+              {/* Action buttons */}
+              {isEditing && (
+                <div className='flex gap-4 justify-end pt-4'>
+                  <Button type="button" variant='outline' onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Save</Button>
+                </div>
+              )}
+            </form>
+          </Form>
         </CardContent>
       </Card>
 

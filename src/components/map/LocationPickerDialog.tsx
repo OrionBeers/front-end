@@ -100,11 +100,11 @@ export default function LocationPickerDialog({
       };
       await api.post("/locations", params);
       toast.success("Location saved successfully");
-      form.reset();
       if (user.is_onboarding) {
         await api.patch(`/users?id_user=${user._id}`, {
           is_onboarding: false,
           id_user: user._id,
+          email: user.email,
         });
         const updatedUser = await onLoadUser()
         saveUserToLocalStorage(updatedUser! as UserAuthResponse)

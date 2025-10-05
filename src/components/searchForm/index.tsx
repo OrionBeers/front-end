@@ -1,8 +1,11 @@
+import api from "@/lib/api.axios";
+import { useAuth } from "@/lib/auth.provider";
 import type { SearchSchema } from "@/lib/search.schema";
 import searchSchema from "@/lib/search.schema";
+import type { Location } from "@/types/location";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import LocationPickerDialog from "../map/LocationPickerDialog";
 import { Button } from "../ui/button";
@@ -38,8 +41,17 @@ const months = [
   { value: "december", label: "December" },
 ];
 
-const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
+const SearchForm = ({
+  onSearch,
+  fetchLocations,
+}: {
+  onSearch?: (requestId?: string) => void;
+  fetchLocations: () => Promise<Location[] | undefined>;
+}) => {
   const [openLocation, setOpenLocation] = useState(false);
+  const [locations, setLocations] = useState([] as Location[]);
+  const { user } = useAuth();
+
   const form = useForm<SearchSchema>({
     defaultValues: {
       crop: "",
@@ -49,9 +61,29 @@ const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
     resolver: zodResolver(searchSchema),
   });
 
-  const onSubmit = (data: SearchSchema) => {
-    console.log(data);
-    onSearch?.();
+  useEffect(() => {
+    fetchLocations().then(data => {
+      if (data) setLocations(data);
+    })
+  }, []);
+
+  const onSubmit = async (data: SearchSchema) => {
+    const body = {
+      id_user: user._id,
+      latitude:
+        locations
+          .find((loc) => loc.display_name === data.location)
+          ?.latitude?.toString() || "0",
+      longitude:
+        locations
+          .find((loc) => loc.display_name === data.location)
+          ?.longitude?.toString() || "0",
+      crop_type: data.crop,
+      start_month: data.month,
+    };
+    const { data: result } = await api.post("/prediction", body);
+    console.log("Search result:", result);
+    onSearch?.(result.id_request);
   };
 
   return (
@@ -110,7 +142,7 @@ const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
           name='month'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Month</FormLabel>
+              <FormLabel>Start month</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>

@@ -1,5 +1,8 @@
-import StatusCalendar from "@/components/calendar";
-import CalendarSkeleton from "@/components/calendar/skelton";
+/* eslint-disable react-hooks/exhaustive-deps */
+import StatusCalendar from "@/components/dashboard/calendar";
+import CalendarSkeleton from "@/components/dashboard/calendar/skelton";
+import DetailsCard from "@/components/dashboard/details";
+import DashboardTitle from "@/components/dashboard/title";
 import LocationPickerDialog from "@/components/map/LocationPickerDialog";
 import SearchForm from "@/components/searchForm";
 import { Button } from "@/components/ui/button";
@@ -15,52 +18,88 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import api from "@/lib/api.axios";
+import { useAuth } from "@/lib/auth.provider";
+import { formatDate } from "@/lib/formatData";
 // import { listenToHistory } from "@/lib/realtimeDatabase";
-import { Plus } from "lucide-react";
+import type {
+  CalendarData,
+  DashboardRequestDetails,
+  DashboardRequests,
+} from "@/types/dashboard";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
+  const [requests, setRequests] = useState<DashboardRequests[]>([]);
   const [newSearch, setNewSearch] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingCalendar, setIsLoadingCalendar] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<{
-    temperature: number;
-    moisture: number;
-    sunlight: number;
-    rainfall: number;
-    windSpeed: number;
-    humidity: number;
-  } | null>(null);
-  
+  const [selectedCrop, setSelectedCrop] = useState<DashboardRequestDetails>(
+    {} as DashboardRequestDetails
+  );
+  const [selectedDate, setSelectedDate] = useState<CalendarData | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingMessage, _setLoadingMessage] = useState("Search started...");
 
+  const fetchCrop = async (history_id: string) => {
+    setIsLoadingCalendar(true);
+    const { data } = await api.get(
+      `/dashboard?id_user=${user._id}&history_id=${history_id}`
+    );
+    setSelectedCrop(data[0] || ({} as DashboardRequests));
+    setIsLoadingCalendar(false);
+  };
+
+  const fetchRequests = async () => {
+    const { data } = await api.get(`/dashboard?id_user=${user._id}`);
+    setRequests(data || []);
+    if (data.length) await fetchCrop(data[0]?._id);
+    setIsLoading(false);
+  };
+
+  const fetchLocations = async () => {
+    const { data } = await api.get(`/locations?id_user=${user._id}`);
+    console.log("Fetched locations:", data);
+    if (!data.length) {
+      setShowOnboarding(true);
+      return;
+    }
+    return data;
+  };
+
   useEffect(() => {
-    // update logic to display if user doesn't have a location saved in the db
-    setShowOnboarding(true);
-    setHistory([]);
-    
-    // TODO: Simulate calendar data loading
-    const timer = setTimeout(() => {
-      setIsLoadingCalendar(false);
-    }, 2000); // 2 seconds loading simulation
-    
-    return () => clearTimeout(timer);
+    fetchRequests();
+    fetchLocations();
   }, []);
 
   // useEffect(() => {
   //   // NOTE: this is sample of real-time updates using Firebase Realtime Database
   //   console.log("Setting up real-time listener...");
   //   listenToHistory({
-  //     idUser:"68e227d4b6b525ab5a1fbd24",
-  //     idRequest:"68e248a29e37f1d9e4810f21",
+  //     idUser:user._id,
+  //     idRequest:requests[0]?._id || "",
   //     onUpdate: (data) => {
   //       console.log("Real-time data update:", data);
   //     },
   //   });
   // },[])
 
-  if (history.length !== 0) {
+  if (isLoading) {
+    return (
+      <div className='flex justify-center items-center h-full w-full'>
+        <Loader className='animate-spin size-10 text-ui-accent' />
+      </div>
+    );
+  }
+
+  if (requests.length === 0 && !isLoading) {
     return (
       <Card className='px-5 max-w-[700px] mx-auto'>
         <CardHeader>
@@ -69,119 +108,25 @@ const Dashboard = () => {
             Find the best planting and harvesting times for your crops
           </CardDescription>
         </CardHeader>
-        <SearchForm />
+        <SearchForm
+          onSearch={() => {
+            setIsLoading(true);
+            fetchRequests();
+          }}
+          fetchLocations={fetchLocations}
+        />
       </Card>
     );
   }
 
-  const list = {
-    october: [
-      {
-        status: 0.1,
-        date: new Date(2025, 9, 10),
-        data: {
-          temperature: 22,
-          moisture: 0.8,
-          sunlight: 6.5,
-          rainfall: 120,
-          windSpeed: 15,
-          humidity: 75,
-        },
-      },
-      {
-        status: 0.5,
-        date: new Date(2025, 9, 16),
-        data: {
-          temperature: 24,
-          moisture: 0.6,
-          sunlight: 7,
-          rainfall: 100,
-          windSpeed: 10,
-          humidity: 70,
-        },
-      },
-    ],
-    november: [
-      {
-        status: 0.7,
-        date: new Date(2025, 10, 5),
-        data: {
-          temperature: 20,
-          moisture: 0.7,
-          sunlight: 6,
-          rainfall: 110,
-          windSpeed: 12,
-          humidity: 72,
-        },
-      },
-      {
-        status: 0.3,
-        date: new Date(2025, 10, 12),
-        data: {
-          temperature: 18,
-          moisture: 0.9,
-          sunlight: 5.5,
-          rainfall: 130,
-          windSpeed: 18,
-          humidity: 78,
-        },
-      },
-      {
-        status: 0.9,
-        date: new Date(2025, 10, 25),
-        data: {
-          temperature: 21,
-          moisture: 0.5,
-          sunlight: 7.5,
-          rainfall: 90,
-          windSpeed: 8,
-          humidity: 68,
-        },
-      },
-    ],
-    december: [
-      {
-        status: 0.4,
-        date: new Date(2025, 11, 1),
-        data: {
-          temperature: 19,
-          moisture: 0.85,
-          sunlight: 5,
-          rainfall: 125,
-          windSpeed: 14,
-          humidity: 74,
-        },
-      },
-      {
-        status: 0.6,
-        date: new Date(2025, 11, 15),
-        data: {
-          temperature: 23,
-          moisture: 0.65,
-          sunlight: 6.8,
-          rainfall: 105,
-          windSpeed: 11,
-          humidity: 69,
-        },
-      },
-      {
-        status: 0.2,
-        date: new Date(2025, 11, 20),
-        data: {
-          temperature: 17,
-          moisture: 0.95,
-          sunlight: 4.5,
-          rainfall: 135,
-          windSpeed: 20,
-          humidity: 80,
-        },
-      },
-    ],
-  };
-
   return (
     <div>
-      <div className='flex justify-end'>
+      <div className='flex justify-between'>
+        <DashboardTitle
+          requests={requests}
+          fetchCrop={fetchCrop}
+          selectedCrop={selectedCrop}
+        />
         <Dialog open={newSearch} onOpenChange={setNewSearch}>
           <DialogTrigger asChild>
             <Button
@@ -195,61 +140,80 @@ const Dashboard = () => {
           </DialogTrigger>
           <DialogContent className='max-w-[700px]'>
             <DialogTitle>New Search</DialogTitle>
-            <SearchForm onSearch={() => setNewSearch(false)} />
+            <SearchForm
+              onSearch={() => {
+                setNewSearch(false);
+                setIsLoading(true);
+                fetchRequests();
+              }}
+              fetchLocations={fetchLocations}
+            />
           </DialogContent>
         </Dialog>
       </div>
-      <div className="max-w-[100%]">
-        {isLoadingCalendar ? (
-          <CalendarSkeleton loadingMessage={loadingMessage} />
-        ) : (
-          <StatusCalendar
-            list={list}
-            onDaySelect={(date) => {
-              const month = date
-                .toLocaleDateString("en-US", { month: "long" })
-                .toLowerCase();
-              const info = list[month as keyof typeof list]?.find(
-                (d) => d.date.toDateString() === date.toDateString()
-              );
-              setSelectedDate(info ? info.data : null);
+      <div className='max-w-[100%] flex flex-wrap items-center justify-center gap-5 transition-all'>
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={"calendar-card"}
+            className='w-full md:w-auto'
+            initial={{ x: -20 }}
+            animate={{
+              x: !isMobile && selectedDate && !isLoadingCalendar ? -50 : 0,
             }}
-          />
-        )}
-      {selectedDate && !isLoadingCalendar && (
-        <Card className='max-w-md mx-auto mt-10'>
-          <CardHeader>
-            <CardTitle>
-              Environmental Data for{" "}
-              {new Date().toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </CardTitle>
-          </CardHeader>
-          <div className='grid grid-cols-2 gap-4 p-4'>
-            <div>
-              <strong>Temperature:</strong> {selectedDate.temperature}°C 
-            </div>
-            <div>
-              <strong>Moisture:</strong> {selectedDate.moisture * 100}%
-            </div>
-            <div>
-              <strong>Sunlight:</strong> {selectedDate.sunlight} hours
-            </div>
-            <div>
-              <strong>Rainfall:</strong> {selectedDate.rainfall} mm
-            </div>
-            <div>
-              <strong>Wind Speed:</strong> {selectedDate.windSpeed} km/h
-            </div>
-            <div>
-              <strong>Humidity:</strong> {selectedDate.humidity}%
-            </div>
-          </div>
-        </Card>
-      )}</div>
+            exit={{ x: -20 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              zIndex:1
+            }}
+          >
+            {isLoadingCalendar ? (
+              <CalendarSkeleton loadingMessage={loadingMessage} />
+            ) : (
+              <StatusCalendar
+                list={selectedCrop.calendar ?? {}}
+                onDaySelect={(date) => {
+                  const month = date
+                    .toLocaleDateString("pt-BR", { month: "long" })
+                    // .toLocaleDateString("en-US", { month: "long" })
+                    .toLowerCase();
+                  const info = selectedCrop.calendar[
+                    month as keyof typeof selectedCrop
+                  ]?.find((item) => {
+                    const itemDate = new Date(formatDate(item.date));
+                    return itemDate.toDateString() === date.toDateString();
+                  });
+                  setSelectedDate(info ?? null);
+                }}
+                activeStartDate={new Date(selectedCrop.date_range?.start_date)}
+              />
+            )}
+          </motion.div>
+
+          {selectedDate && !isLoadingCalendar && (
+            // slide from the middle to the right on desktop and from middle to the bottom on mobile
+            <motion.div
+              key={"details-card"}
+              exit={{
+                opacity: 0,
+                x: isMobile ? 0 : -20,
+                y: isMobile ? -20 : 0,
+              }}
+              initial={{
+                opacity: 0,
+                x: isMobile ? 0 : -20,
+                y: isMobile ? -20 : 0,
+              }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                zIndex: 0
+              }}
+            >
+              <DetailsCard selectedDate={selectedDate} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       <LocationPickerDialog
         open={showOnboarding}
         setOpen={setShowOnboarding}

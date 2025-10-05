@@ -28,7 +28,7 @@ export default function Header() {
 
   return (
     // TODO: dark mode header
-    <header className='sticky top-0 left-0 backdrop-blur-smg text-black dark:text-white py-2 px-2 sm:px-4 z-50'>
+    <header className='sticky top-0 left-0 backdrop-blur-sm text-black dark:text-white py-2 px-2 sm:px-4 z-50'>
       <div className='container mx-auto flex items-center justify-between'>
         {/* Logo */}
         <NavLink to='/dashboard'>

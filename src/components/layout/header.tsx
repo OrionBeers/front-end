@@ -1,10 +1,10 @@
+import orionFarmerLogo from "@/assets/orion-farmer-logo.png";
 import { useAuth } from "@/lib/auth.provider";
 import { cn } from "@/lib/utils";
 import { LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router";
 import { ModeToggle } from "../themeProvider/mode-toggle";
-import orionFarmerLogo from "@/assets/orion-farmer-logo.png";
 import { Button } from "../ui/button";
 import {
   Sheet,
@@ -27,18 +27,16 @@ export default function Header() {
   ];
 
   return (
-// TODO: dark mode header
-<header className="bg-white/30 dark:bg-black/40 text-black dark:text-white py-2 px-2 sm:px-4 z-50">
-  <div className='container mx-auto flex items-center justify-between'>
+    // TODO: dark mode header
+    <header className='bg-white/75 dark:bg-black/40 text-black dark:text-white py-2 px-2 sm:px-4 z-50'>
+      <div className='container mx-auto flex items-center justify-between'>
         {/* Logo */}
         <NavLink to='/dashboard'>
-         <div className="rounded p-2 flex items-center">
-            <img
-              src={orionFarmerLogo}
-              alt="Orion Farmer Logo"
-              className="h-20 w-20 lg:h-22 lg:w-22 opacity-100"
-            />
-          </div>
+          <img
+            src={orionFarmerLogo}
+            alt='Orion Farmer Logo'
+            className='h-20 w-20 lg:h-22 lg:w-22 opacity-100 rounded p-2'
+          />
         </NavLink>
 
         {/* Right side: Desktop Navigation + Actions */}

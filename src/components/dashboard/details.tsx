@@ -1,5 +1,7 @@
 import { capitalize, formatDate } from "@/lib/formatData";
 import type { CalendarData } from "@/types/dashboard";
+import { XIcon } from "lucide-react";
+import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 const MetricUnit = {
@@ -8,10 +10,16 @@ const MetricUnit = {
   precipitation: "mm",
 } as const;
 
-const DetailsCard = ({ selectedDate }: { selectedDate: CalendarData }) => {
+const DetailsCard = ({
+  selectedDate,
+  onClose,
+}: {
+  selectedDate: CalendarData;
+  onClose: () => void;
+}) => {
   return (
     <Card className='w-fit min-w-[300px] mx-auto mt-10'>
-      <CardHeader>
+      <CardHeader className='relative'>
         <CardTitle className='flex flex-col gap-4'>
           Environmental predictions for{" "}
           <span>
@@ -25,6 +33,15 @@ const DetailsCard = ({ selectedDate }: { selectedDate: CalendarData }) => {
             )}
           </span>
         </CardTitle>
+        <Button
+          variant='ghost'
+          size='icon'
+          className='absolute -top-5 right-0'
+          onClick={onClose}
+        >
+          <XIcon className='h-4 w-4' />
+          <span className='sr-only'>Close</span>
+        </Button>
       </CardHeader>
       <CardContent>
         {Object.entries(selectedDate.prediction_data).map(([metric, value]) => (

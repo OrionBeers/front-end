@@ -209,7 +209,7 @@ const Dashboard = () => {
                 zIndex: 0
               }}
             >
-              <DetailsCard selectedDate={selectedDate} />
+              <DetailsCard selectedDate={selectedDate} onClose={() => setSelectedDate(null)} />
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import Calendar from "react-calendar";
 
 const StatusCalendar = ({
   list,
-  onDaySelect
+  onDaySelect,
 }: {
   list: {
     [key: string]: {
@@ -49,16 +50,19 @@ const StatusCalendar = ({
       tileClassName={({ date }) => {
         const status = getStatusForDay(date);
         if (status) {
-          console.log(status);
           return `status ${status}`;
         }
         return undefined;
       }}
       minDate={new Date()}
       className={cn(
-        "mx-auto w-fit max-w-[500px] mt-10 border border-border rounded-lg overflow-hidden",
+        "mx-auto w-fit max-w-[500px] mt-10 border border-border rounded-lg overflow-hidden"
       )}
       onClickDay={onDaySelect}
+      prevLabel={<ChevronLeft />}
+      nextLabel={<ChevronRight />}
+      prev2Label={<ChevronsLeft />}
+      next2Label={<ChevronsRight />}
     />
   );
 };

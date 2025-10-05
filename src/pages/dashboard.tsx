@@ -1,4 +1,3 @@
-import StatusCalendar from "@/components/calendar";
 import LocationPickerDialog from "@/components/map/LocationPickerDialog";
 import SearchForm from "@/components/searchForm";
 import { Button } from "@/components/ui/button";
@@ -14,14 +13,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import api from "@/lib/api.axios";
+import { useAuth } from "@/lib/auth.provider";
+import type { DashboardRequests } from "@/types/dashboard";
 // import { listenToHistory } from "@/lib/realtimeDatabase";
-import { Plus } from "lucide-react";
+import { Plus, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
+  const { user } = useAuth()
+  const [processing, setProcessing] = useState(false);
+  const [requests, setRequests] = useState<DashboardRequests[]>([]);
   const [newSearch, setNewSearch] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<{
     temperature: number;
     moisture: number;
@@ -34,8 +39,17 @@ const Dashboard = () => {
   useEffect(() => {
     // update logic to display if user doesn't have a location saved in the db
     setShowOnboarding(true);
-    setHistory([]);
   }, []);
+
+  const fetchRequests = async () => {
+    const { data } = await api.get(`/dashboard?id_user=${user._id}`)
+    setRequests(data || []);
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    fetchRequests();
+  } ,[])
 
   // useEffect(() => {
   //   // NOTE: this is sample of real-time updates using Firebase Realtime Database
@@ -49,7 +63,7 @@ const Dashboard = () => {
   //   });
   // },[])
 
-  if (history.length !== 0) {
+  if (requests.length !== 0 && !isLoading) {
     return (
       <Card className='px-5 max-w-[700px] mx-auto'>
         <CardHeader>
@@ -58,7 +72,12 @@ const Dashboard = () => {
             Find the best planting and harvesting times for your crops
           </CardDescription>
         </CardHeader>
-        <SearchForm />
+        <SearchForm
+          onSearch={() => {
+            setIsLoading(true);
+            fetchRequests();
+          }}
+        />
       </Card>
     );
   }
@@ -170,7 +189,10 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div className='flex justify-end'>
+      <div className='flex justify-between'>
+        <div>
+          {requests.length ? `${requests.length} requests found` : "No requests found"}
+        </div>
         <Dialog open={newSearch} onOpenChange={setNewSearch}>
           <DialogTrigger asChild>
             <Button
@@ -184,11 +206,17 @@ const Dashboard = () => {
           </DialogTrigger>
           <DialogContent className='max-w-[700px]'>
             <DialogTitle>New Search</DialogTitle>
-            <SearchForm onSearch={() => setNewSearch(false)} />
+            <SearchForm
+              onSearch={() => {
+                setNewSearch(false);
+                setIsLoading(true);
+                fetchRequests();
+              }}
+            />
           </DialogContent>
         </Dialog>
       </div>
-      <div className="max-w-[100%]"><StatusCalendar
+      {/* <div className="max-w-[100%]"><StatusCalendar
         list={list}
         onDaySelect={(date) => {
           const month = date
@@ -233,7 +261,7 @@ const Dashboard = () => {
             </div>
           </div>
         </Card>
-      )}</div>
+      )}</div> */}
       <LocationPickerDialog
         onLocationSelect={(location) => {
           console.log("Selected location:", location);

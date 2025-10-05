@@ -23,7 +23,7 @@ const DashboardTitle = ({
   return (
     <div className='grow'>
       {requests.length ? (
-        <div className='flex items-center gap-2 grow'>
+        <div className='flex flex-col md:flex-row md:items-center gap-2 grow'>
           <Select
             onValueChange={async (value) => {
               await fetchCrop(value);

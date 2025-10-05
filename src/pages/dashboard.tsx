@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import StatusCalendar from "@/components/dashboard/calendar";
 import CalendarSkeleton from "@/components/dashboard/calendar/skelton";
 import DetailsCard from "@/components/dashboard/details";
@@ -17,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 import api from "@/lib/api.axios";
 import { useAuth } from "@/lib/auth.provider";
 import { formatDate } from "@/lib/formatData";
@@ -26,12 +28,14 @@ import type {
   DashboardRequestDetails,
   DashboardRequests,
 } from "@/types/dashboard";
+import { AnimatePresence, motion } from "framer-motion";
 import { Loader, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Dashboard = () => {
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [requests, setRequests] = useState<DashboardRequests[]>([]);
   const [newSearch, setNewSearch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,12 +45,8 @@ const Dashboard = () => {
   );
   const [selectedDate, setSelectedDate] = useState<CalendarData | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingMessage, _setLoadingMessage] = useState("Search started...");
-
-  useEffect(() => {
-    // update logic to display if user doesn't have a location saved in the db
-    setShowOnboarding(true);
-  }, []);
 
   const fetchCrop = async (history_id: string) => {
     setIsLoadingCalendar(true);
@@ -64,8 +64,19 @@ const Dashboard = () => {
     setIsLoading(false);
   };
 
+  const fetchLocations = async () => {
+    const { data } = await api.get(`/locations?id_user=${user._id}`);
+    console.log("Fetched locations:", data);
+    if (!data.length) {
+      setShowOnboarding(true);
+      return;
+    }
+    return data;
+  };
+
   useEffect(() => {
     fetchRequests();
+    fetchLocations();
   }, []);
 
   // useEffect(() => {
@@ -102,6 +113,7 @@ const Dashboard = () => {
             setIsLoading(true);
             fetchRequests();
           }}
+          fetchLocations={fetchLocations}
         />
       </Card>
     );
@@ -134,35 +146,73 @@ const Dashboard = () => {
                 setIsLoading(true);
                 fetchRequests();
               }}
+              fetchLocations={fetchLocations}
             />
           </DialogContent>
         </Dialog>
       </div>
-      <div className='max-w-[100%]'>
-        {isLoadingCalendar ? (
-          <CalendarSkeleton loadingMessage={loadingMessage} />
-        ) : (
-          <StatusCalendar
-            list={selectedCrop.calendar ?? {}}
-            onDaySelect={(date) => {
-              const month = date
-                .toLocaleDateString("pt-BR", { month: "long" })
-                // .toLocaleDateString("en-US", { month: "long" })
-                .toLowerCase();
-              const info = selectedCrop.calendar[
-                month as keyof typeof selectedCrop
-              ]?.find((item) => {
-                const itemDate = new Date(formatDate(item.date));
-                return itemDate.toDateString() === date.toDateString();
-              });
-              setSelectedDate(info ?? null);
+      <div className='max-w-[100%] flex flex-wrap items-center justify-center gap-5 transition-all'>
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={"calendar-card"}
+            className='w-full md:w-auto'
+            initial={{ x: -20 }}
+            animate={{
+              x: !isMobile && selectedDate && !isLoadingCalendar ? -50 : 0,
             }}
-            activeStartDate={new Date(selectedCrop.date_range?.start_date)}
-          />
-        )}
-        {selectedDate && !isLoadingCalendar && (
-          <DetailsCard selectedDate={selectedDate} />
-        )}
+            exit={{ x: -20 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              zIndex:1
+            }}
+          >
+            {isLoadingCalendar ? (
+              <CalendarSkeleton loadingMessage={loadingMessage} />
+            ) : (
+              <StatusCalendar
+                list={selectedCrop.calendar ?? {}}
+                onDaySelect={(date) => {
+                  const month = date
+                    .toLocaleDateString("pt-BR", { month: "long" })
+                    // .toLocaleDateString("en-US", { month: "long" })
+                    .toLowerCase();
+                  const info = selectedCrop.calendar[
+                    month as keyof typeof selectedCrop
+                  ]?.find((item) => {
+                    const itemDate = new Date(formatDate(item.date));
+                    return itemDate.toDateString() === date.toDateString();
+                  });
+                  setSelectedDate(info ?? null);
+                }}
+                activeStartDate={new Date(selectedCrop.date_range?.start_date)}
+              />
+            )}
+          </motion.div>
+
+          {selectedDate && !isLoadingCalendar && (
+            // slide from the middle to the right on desktop and from middle to the bottom on mobile
+            <motion.div
+              key={"details-card"}
+              exit={{
+                opacity: 0,
+                x: isMobile ? 0 : -20,
+                y: isMobile ? -20 : 0,
+              }}
+              initial={{
+                opacity: 0,
+                x: isMobile ? 0 : -20,
+                y: isMobile ? -20 : 0,
+              }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                zIndex: 0
+              }}
+            >
+              <DetailsCard selectedDate={selectedDate} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <LocationPickerDialog
         onLocationSelect={(location) => {

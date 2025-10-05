@@ -175,7 +175,7 @@ const Dashboard = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <StatusCalendar
+      <div className="max-w-[100%]"><StatusCalendar
         list={list}
         onDaySelect={(date) => {
           const month = date
@@ -220,7 +220,7 @@ const Dashboard = () => {
             </div>
           </div>
         </Card>
-      )}
+      )}</div>
       <LocationPickerDialog
         onLocationSelect={(location) => {
           console.log("Selected location:", location);

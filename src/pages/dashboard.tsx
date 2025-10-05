@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { listenToHistory } from "@/lib/realtimeDatabase";
+// import { listenToHistory } from "@/lib/realtimeDatabase";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 

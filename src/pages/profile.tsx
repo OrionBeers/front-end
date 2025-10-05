@@ -51,9 +51,9 @@ const Profile = () => {
         // const { data } = await axiosInstance.get("/locations");
         const data = [
           {
-            displayName: "New York, USA",
-            lat: 40.7128,
-            lng: -74.006,
+            display_name: "New York, USA",
+            latitude: 40.7128,
+            longitude: -74.006,
           },
         ] as Location[]; // TODO: remove after backend is ready
         const { data: profile } = await api.get("/users", {
@@ -85,7 +85,7 @@ const Profile = () => {
   useEffect(() => {
     if (
       profile?.locations?.some((it) =>
-        editLocations.every((el) => el.lat !== it.lat && el.lng !== it.lng)
+        editLocations.every((el) => el.latitude !== it.latitude && el.longitude !== it.longitude)
       )
     ) {
       setEditLocations(profile?.locations || []);

@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import locationSchema, { type LocationSchema } from "../../lib/location.schema";
-import type { Location } from "../../types/location";
+import type { CreateLocation } from "../../types/location";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -28,7 +28,7 @@ export default function LocationPickerDialog({
   setOpen,
 }: LocationPickerDialogProps) {
     const { user } = useAuth();
-  const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<CreateLocation[]>([]);
   const [skipCoordinateUpdate, setSkipCoordinateUpdate] = useState(false);
 
   const form = useForm<LocationSchema>({
@@ -68,19 +68,19 @@ export default function LocationPickerDialog({
   }, [open, form]);
 
   // Handle location update (from coordinates input or map click)
-  const handleLocationUpdate = (lat: number, lng: number) => {
-    const location: Location = {
-      lat: lat,
-      lng: lng,
-      displayName: farmName || `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+  const handleLocationUpdate = (latitude: number, longitude: number) => {
+    const location: CreateLocation = {
+      latitude: latitude,
+      longitude: longitude,
+      display_name: farmName || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
     };
 
     setSelectedLocations([location]);
     setSkipCoordinateUpdate(true);
-    form.setValue("latitude", location.lat.toFixed(6), {
+    form.setValue("latitude", location.latitude.toFixed(6), {
       shouldValidate: true,
     });
-    form.setValue("longitude", location.lng.toFixed(6), {
+    form.setValue("longitude", location.longitude.toFixed(6), {
       shouldValidate: true,
     });
   };
@@ -128,11 +128,11 @@ export default function LocationPickerDialog({
       ) {
         const currentLat =
           selectedLocations.length > 0
-            ? parseFloat(selectedLocations[0].lat.toFixed(6))
+            ? parseFloat(selectedLocations[0].latitude.toFixed(6))
             : null;
         const currentLng =
           selectedLocations.length > 0
-            ? parseFloat(selectedLocations[0].lng.toFixed(6))
+            ? parseFloat(selectedLocations[0].longitude.toFixed(6))
             : null;
 
         if (

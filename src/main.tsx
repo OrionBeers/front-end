@@ -9,6 +9,7 @@ import HomePage from "./pages/home.tsx";
 import Layout from "./pages/layout.tsx";
 import ProtectedRoute from "./pages/protected-route.tsx";
 import Dashboard from "./pages/dashboard.tsx";
+import Profile from "./pages/profile.tsx";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
           {
             path: "/about-us",
             element: <AboutUs />,
+          },
+          {
+            path: "/profile",
+            element: <Profile />,
           },
         ],
       },

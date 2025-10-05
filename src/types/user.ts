@@ -9,4 +9,10 @@ type UserAuthResponse = {
   updated_at: string;
 };
 
-export type { UserAuthResponse }
+import type { Location } from "./location";
+
+type UserProfile = UserAuthResponse & {
+  locations?: Location[];
+};
+
+export type { UserAuthResponse, UserProfile }

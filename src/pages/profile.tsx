@@ -3,7 +3,7 @@ import { LocationSection } from "@/components/profile/locationSection";
 import { ProfileHeader } from "@/components/profile/profileInfo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import authAxios from "@/lib/auth.axios";
+import api from "@/lib/api.axios";
 import { useAuth } from "@/lib/auth.provider";
 import type { Location } from "@/types/location";
 import type { UserProfile } from "@/types/user";
@@ -47,12 +47,12 @@ const Profile = () => {
             lng: -74.006,
           },
         ] as Location[]; // TODO: remove after backend is ready
-        const { data: profile } = await authAxios.get("/users", {
-          params: { email: user.email },
+        const { data: profile } = await api.get("/users", {
+          params: { email: user.email, id_user: user._id },
         });
         setProfile({
           ...profile,
-          avatar: user.photoURL || "",
+          avatar: user.avatar || "",
           locations: data,
         });
         setEditName(profile.name);
@@ -92,7 +92,7 @@ const Profile = () => {
     };
 
     try {
-      const { data } = await authAxios.patch("/users", updateData);
+      const { data } = await api.patch("/users", updateData);
       setProfile(data);
       toast.success("Profile updated!");
     } catch (error) {

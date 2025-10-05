@@ -15,4 +15,4 @@ type UserProfile = UserAuthResponse & {
   locations?: Location[];
 };
 
-export type { UserAuthResponse, UserProfile }
+export type { UserAuthResponse, UserProfile };

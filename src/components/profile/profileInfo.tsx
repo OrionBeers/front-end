@@ -10,35 +10,37 @@ interface ProfileHeaderProps {
   onNameChange: (name: string) => void;
 }
 
-export const ProfileHeader = ({ 
+export const ProfileHeader = ({
   profile,
   isEditing,
   editName,
-  onNameChange
+  onNameChange,
 }: ProfileHeaderProps) => (
-  <>
+  <div className='flex items-center gap-6 mb-6'>
     {/* Avatar */}
-    <div className="flex justify-center">
-      <Avatar className="h-32 w-32">
+    <div className='flex justify-center'>
+      <Avatar className='h-32 w-32'>
         <AvatarImage src={profile.avatar} alt={profile.name} />
         <AvatarFallback>{profile.name[0]?.toUpperCase()}</AvatarFallback>
       </Avatar>
     </div>
 
-    {/* Name field */}
-    <div className="space-y-2">
-      <Label>Name</Label>
-      {isEditing ? (
-        <Input value={editName} onChange={(e) => onNameChange(e.target.value)} />
-      ) : (
-        <div className="text-lg font-medium">{profile.name}</div>
-      )}
-    </div>
+    <div className='grow flex flex-col gap-4 w-full'>
+      {/* Name field */}
+      <div className='space-y-2'>
+        <Label>Name</Label>
+        <Input
+          value={editName}
+          onChange={(e) => onNameChange(e.target.value)}
+          readOnly={!isEditing}
+        />
+      </div>
 
-    {/* Email field */}
-    <div className="space-y-2">
-      <Label>Email</Label>
-      <div className="text-lg text-muted-foreground">{profile.email}</div>
+      {/* Email field */}
+      <div className='space-y-2'>
+        <Label>Email</Label>
+        <Input value={profile.email} readOnly className='bg-muted' disabled />
+      </div>
     </div>
-  </>
+  </div>
 );

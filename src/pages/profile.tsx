@@ -1,14 +1,26 @@
-import type { Location } from "@/types/location";
-import type { UserProfile } from "@/types/user";
-import { useAuth } from "@/lib/auth.provider";
-import axiosInstance from "@/lib/axios";
+import LocationPickerDialog from "@/components/map/LocationPickerDialog";
+import { LocationSection } from "@/components/profile/locationSection";
+import { ProfileHeader } from "@/components/profile/profileInfo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import LocationPickerDialog from "@/components/map/LocationPickerDialog";
+import authAxios from "@/lib/auth.axios";
+import { useAuth } from "@/lib/auth.provider";
+import type { Location } from "@/types/location";
+import type { UserProfile } from "@/types/user";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ProfileHeader } from "@/components/profile/profileInfo";
-import { LocationSection } from "@/components/profile/locationSection";
+
+const defaultProfile: UserProfile = {
+  _id: "",
+  email: "",
+  name: "User",
+  avatar: "",
+  id_google: "",
+  historical_data: [],
+  created_at: "",
+  updated_at: "",
+  locations: [],
+};
 
 const Profile = () => {
   const { user } = useAuth();
@@ -16,7 +28,9 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [editName, setEditName] = useState("");
-  const [editLocations, setEditLocations] = useState<Location[]>([]);
+  const [editLocations, setEditLocations] = useState<Location[]>(
+    () => profile?.locations || []
+  );
   const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   // Fetch profile on mount
@@ -25,37 +39,29 @@ const Profile = () => {
 
     const fetchProfile = async () => {
       try {
-        const { data } = await axiosInstance.get("/locations");
-        const profile: UserProfile = {
-            _id: user.uid,
-            email: user.email || "",
-            name: user.displayName || "User",
-            avatar: user.photoURL || "",
-            id_google: user.uid,
-            historical_data: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            locations: data || [],
-        };
-        setProfile(profile);
+        // const { data } = await axiosInstance.get("/locations");
+        const data = [
+          {
+            displayName: "New York, USA",
+            lat: 40.7128,
+            lng: -74.006,
+          },
+        ] as Location[]; // TODO: remove after backend is ready
+        const { data: profile } = await authAxios.get("/users", {
+          params: { email: user.email },
+        });
+        setProfile({
+          ...profile,
+          avatar: user.photoURL || "",
+          locations: data,
+        });
         setEditName(profile.name);
       } catch (error) {
         console.warn("API not available:", error);
         setProfile(null);
         setEditName("");
         // TODO: delete after backend is ready
-        const profile: UserProfile = {
-            _id: user.uid,
-            email: user.email || "",
-            name: user.displayName || "User",
-            avatar: user.photoURL || "",
-            id_google: user.uid,
-            historical_data: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            locations: [],
-        };
-        setProfile(profile);
+        setProfile(defaultProfile);
         toast.error("Failed to fetch profile data");
       } finally {
         setIsLoading(false);
@@ -65,61 +71,65 @@ const Profile = () => {
     fetchProfile();
   }, [user]);
 
+  useEffect(() => {
+    if (
+      profile?.locations?.some((it) =>
+        editLocations.every((el) => el.lat !== it.lat && el.lng !== it.lng)
+      )
+    ) {
+      setEditLocations(profile?.locations || []);
+    }
+  }, [profile]);
+
   const handleSave = async () => {
     if (!profile) return;
 
-    const updateData: Partial<UserProfile> = { 
+    const updateData: Partial<UserProfile> = {
       name: editName,
-      locations: editLocations
+      email: profile.email,
+      // edit locations separate (it's a different endpoint)
+      // locations: editLocations,
     };
-    
+
     try {
-      const { data } = await axiosInstance.patch("/user/profile", updateData);
+      const { data } = await authAxios.patch("/users", updateData);
       setProfile(data);
       toast.success("Profile updated!");
     } catch (error) {
       console.warn("API not available:", error);
       setProfile({ ...profile, ...updateData });
-      toast.success("Profile updated locally");
+      toast.error("Failed to update profile", {
+        description: (error as Error)?.message,
+      });
     } finally {
       setIsEditing(false);
-      setEditLocations([]);
     }
   };
 
   const handleAddLocation = () => {
     setShowLocationPicker(true);
-    setShowLocationPicker(true);
   };
 
   const handleRemoveLocation = (index: number) => {
-    setEditLocations(prev => prev.filter((_, i) => i !== index));
+    // create logic to remove location when api is ready
+    setEditLocations((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleStartEditing = () => {
     setEditName(profile?.name || "");
-    setEditLocations(profile?.locations || []);
     setIsEditing(true);
-  };
-
-  const handleStartEditingWithLocationPicker = () => {
-    setEditName(profile?.name || "");
-    setEditLocations(profile?.locations || []);
-    setIsEditing(true);
-    setShowLocationPicker(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setEditLocations([]);
     setEditName(profile?.name || "");
   };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10 px-4 max-w-4xl">
+      <div className='container mx-auto py-10 px-4 max-w-4xl'>
         <Card>
-          <CardContent className="pt-6 text-center">Loading...</CardContent>
+          <CardContent className='pt-6 text-center'>Loading...</CardContent>
         </Card>
       </div>
     );
@@ -128,36 +138,32 @@ const Profile = () => {
   if (!profile) return null;
 
   return (
-    <div className="container mx-auto py-10 px-4 max-w-4xl">
+    <div className='container mx-auto py-10 px-4 max-w-4xl'>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className='flex flex-row items-center justify-between'>
           <CardTitle>Profile</CardTitle>
-          {!isEditing && (
-            <Button onClick={handleStartEditing}>Edit</Button>
-          )}
+          {!isEditing && <Button onClick={handleStartEditing}>Edit</Button>}
         </CardHeader>
-        
-        <CardContent className="space-y-6">
+
+        <CardContent className='space-y-6'>
           <ProfileHeader
             profile={profile}
             isEditing={isEditing}
             editName={editName}
             onNameChange={setEditName}
           />
-          
+
           <LocationSection
-            locations={profile.locations}
             isEditing={isEditing}
             editLocations={editLocations}
             onAddLocation={handleAddLocation}
             onRemoveLocation={handleRemoveLocation}
-            onStartEditingWithLocationPicker={handleStartEditingWithLocationPicker}
           />
 
           {/* Action buttons */}
           {isEditing && (
-            <div className="flex gap-4 justify-end pt-4">
-              <Button variant="outline" onClick={handleCancel}>
+            <div className='flex gap-4 justify-end pt-4'>
+              <Button variant='outline' onClick={handleCancel}>
                 Cancel
               </Button>
               <Button onClick={handleSave}>Save</Button>

@@ -133,9 +133,6 @@ const SearchForm = ({
               <LocationPickerDialog
                 open={openLocation}
                 setOpen={setOpenLocation}
-                onLocationSelect={(location) => {
-                  console.log(location);
-                }}
               />
             </div>
           )}

@@ -215,9 +215,6 @@ const Dashboard = () => {
         </AnimatePresence>
       </div>
       <LocationPickerDialog
-        onLocationSelect={(location) => {
-          console.log("Selected location:", location);
-        }}
         open={showOnboarding}
         setOpen={setShowOnboarding}
       />

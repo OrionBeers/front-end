@@ -214,9 +214,6 @@ const Profile = () => {
       <LocationPickerDialog
         open={showLocationPicker}
         setOpen={setShowLocationPicker}
-        onLocationSelect={(loc) => {
-          setEditLocations((prev) => [...prev, loc]);
-        }}
       />
     </div>
   );

@@ -1,9 +1,9 @@
-export interface Location {
-  _id: string;
-  display_name: string;
+export interface CreateLocation {
   latitude: number;
   longitude: number;
-  id_user: string;
-  created_at: string;
-  updated_at: string;
+  display_name: string;
+}
+
+export interface Location extends CreateLocation {
+  _id: string;
 }

@@ -1,3 +1,4 @@
+import orionFarmerLogo from "@/assets/orion-farmer-logo.png";
 import { useAuth } from "@/lib/auth.provider";
 import { cn } from "@/lib/utils";
 import { LogOut, Menu } from "lucide-react";
@@ -26,12 +27,16 @@ export default function Header() {
   ];
 
   return (
-    <header className='bg-[#2196F3] text-black py-4 px-2 sm:px-4 border-b sticky top-0 z-50 dark:bg-[#2196F3]/90 dark:text-white backdrop-blur'>
+    // TODO: dark mode header
+    <header className='bg-white/75 dark:bg-black/40 text-black dark:text-white py-2 px-2 sm:px-4 z-50'>
       <div className='container mx-auto flex items-center justify-between'>
         {/* Logo */}
-        {/* TODO: Replace with actual logo image   */}
-        <NavLink to='/dashboard' className='text-lg sm:text-xl font-bold'>
-          LOGO
+        <NavLink to='/dashboard'>
+          <img
+            src={orionFarmerLogo}
+            alt='Orion Farmer Logo'
+            className='h-20 w-20 lg:h-22 lg:w-22 opacity-100 rounded p-2'
+          />
         </NavLink>
 
         {/* Right side: Desktop Navigation + Actions */}

@@ -5,6 +5,7 @@ const firebaseConfig = {
   storageBucket: "orion-beers-backend.firebasestorage.app",
   messagingSenderId: "509042860549",
   appId: "1:509042860549:web:9a3bf150f4f04c3dbcb26c",
+  databaseURL: "https://orion-beers-backend-default-rtdb.firebaseio.com"
 };
 
 export default firebaseConfig;

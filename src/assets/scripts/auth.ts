@@ -1,5 +1,5 @@
 import type { SignUpSchema } from "@/lib/ signup.schema";
-import authAxios from "@/lib/auth.axios";
+import api from "@/lib/api.axios";
 import type { LoginSchema } from "@/lib/login.schema";
 import type { UserAuthResponse } from "@/types/user";
 import {
@@ -19,7 +19,7 @@ const AUTH_STORAGE_KEY = "orion.user.data";
 
 const addUserToDB = async (user: User) => {
   try {
-    const { data } = await authAxios.post("/users", {
+    const { data } = await api.post("/users", {
       email: user.email,
       uid: user.uid,
       name: user.displayName,
@@ -36,7 +36,7 @@ const addUserToDB = async (user: User) => {
 
 const getUserFromDB = async (email: string) => {
   try {
-    const { data } = await authAxios.get("/users", {
+    const { data } = await api.get("/users", {
       params: {
         email,
       },
@@ -51,9 +51,9 @@ const getUserFromDB = async (email: string) => {
   }
 };
 
-const saveUserToLocalStorage = (user: User, dbUser: UserAuthResponse) => {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({...user, ...dbUser }));
-}
+const saveUserToLocalStorage = (dbUser: UserAuthResponse) => {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(dbUser));
+};
 
 export const onLoadUser = async () => {
   const storageUser = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -62,9 +62,11 @@ export const onLoadUser = async () => {
       const user = JSON.parse(storageUser);
       const dbUser = await getUserFromDB(user.email);
       if (!dbUser) {
-        await addUserToDB(user);
+        const newUser = await addUserToDB(user);
+        saveUserToLocalStorage(newUser!);
+        return newUser;
       }
-      return user;
+      return dbUser;
     } else {
       const { currentUser } = getAuth();
 
@@ -72,7 +74,7 @@ export const onLoadUser = async () => {
         const dbUser = getUserFromDB(currentUser.email as string);
         if (!dbUser) {
           const newDbUser = await addUserToDB(currentUser);
-          saveUserToLocalStorage(currentUser, newDbUser!);
+          saveUserToLocalStorage(newDbUser!);
         }
         return currentUser;
       }
@@ -94,7 +96,10 @@ export const googleLogin = async () => {
     const dbUser = await getUserFromDB(user.email as string);
     if (!dbUser) {
       const newDbUser = await addUserToDB(user);
-      saveUserToLocalStorage(user, newDbUser!);
+      
+      saveUserToLocalStorage(newDbUser!);
+    } else {
+      saveUserToLocalStorage(dbUser);
     }
     toast.success("Login successful");
     return `/dashboard`;
@@ -113,7 +118,10 @@ export const passwordLogin = async ({ email, password }: LoginSchema) => {
     const dbUser = await getUserFromDB(user.email as string);
     if (!dbUser) {
       const newDbUser = await addUserToDB(user);
-      saveUserToLocalStorage(user, newDbUser!);
+      
+      saveUserToLocalStorage(newDbUser!);
+    }else {
+      saveUserToLocalStorage(dbUser);
     }
     toast.success("Login successful");
     return `/dashboard`;
@@ -137,7 +145,8 @@ export const createAccount = async ({
       password
     );
     const newDbUser = await addUserToDB({ ...user, displayName: name });
-    saveUserToLocalStorage(user, newDbUser!);
+    
+    saveUserToLocalStorage(newDbUser!);
     toast.success("Account created successfully");
     return `/dashboard`;
   } catch (e) {

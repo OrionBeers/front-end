@@ -66,6 +66,14 @@ export default function Header() {
             {/* Desktop Mode Toggle */}
             <div className='hidden md:block'>
               <ModeToggle />
+              <Button
+                variant='ghost'
+                onClick={() => logout()}
+                className='w-fit'
+              >
+                <LogOut />
+                <span className='sr-only'>Log out</span>
+              </Button>
             </div>
 
             {/* Mobile Menu */}

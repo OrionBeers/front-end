@@ -1,8 +1,8 @@
 import * as auth from "@/assets/scripts/auth";
 import { Toaster } from "@/components/ui/sonner";
-import type { User } from "firebase/auth";
+import type { UserAuthResponse } from "@/types/user";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Outlet, redirect, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { SignUpSchema } from "./ signup.schema";
 import type { LoginSchema } from "./login.schema";
@@ -13,10 +13,10 @@ type LoginParams =
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (val: LoginParams) => Promise<Response | undefined>;
+  login: (val: LoginParams) => void;
   logout: () => void;
-  signUp: (val: SignUpSchema) => Promise<Response | undefined>;
-  user: User;
+  signUp: (val: SignUpSchema) => void;
+  user: UserAuthResponse;
   setIsAuthenticated: (val: boolean) => void;
 }
 
@@ -24,7 +24,7 @@ const authContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState({} as User);
+  const [user, setUser] = useState({} as UserAuthResponse);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export const AuthProvider = () => {
       } else {
         setIsAuthenticated(true);
         setUser(data);
-        navigate('/dashboard')
+        navigate("/dashboard");
       }
     });
   }, []);
@@ -43,7 +43,8 @@ export const AuthProvider = () => {
     const result = await auth.createAccount(credentials);
     if (result) {
       setIsAuthenticated(true);
-      return redirect(result);
+      navigate("/dashboard");
+      return;
     }
   };
 
@@ -53,7 +54,8 @@ export const AuthProvider = () => {
       const result = await auth.googleLogin();
       if (result) {
         setIsAuthenticated(true);
-        return redirect(result);
+        navigate("/dashboard");
+        return;
       }
     }
     if (type === "credentials") {
@@ -66,7 +68,8 @@ export const AuthProvider = () => {
       const result = await auth.passwordLogin(credentials);
       if (result) {
         setIsAuthenticated(true);
-        return redirect(result);
+        navigate("/dashboard");
+        return;
       }
     }
   };

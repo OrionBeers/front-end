@@ -31,6 +31,7 @@ const addUserToDB = async (user: User) => {
   } catch (e) {
     toast.error("Something went wrong");
     console.log(e);
+    throw e;
   }
 };
 
@@ -47,6 +48,9 @@ const getUserFromDB = async (email: string) => {
     if (data._id) return data as UserAuthResponse;
     return null;
   } catch (e) {
+    if (e instanceof Error && e.message.includes("404")) {
+      return null;
+    }
     console.log(e);
   }
 };
@@ -94,9 +98,10 @@ export const googleLogin = async () => {
     const data = await signInWithPopup(auth, provider);
     const user = data.user;
     const dbUser = await getUserFromDB(user.email as string);
+    console.log({ dbUser });
     if (!dbUser) {
       const newDbUser = await addUserToDB(user);
-      
+
       saveUserToLocalStorage(newDbUser!);
     } else {
       saveUserToLocalStorage(dbUser);
@@ -104,7 +109,7 @@ export const googleLogin = async () => {
     toast.success("Login successful");
     return `/dashboard`;
   } catch (error) {
-    console.error(error);
+    console.log("line 111. -google login", error);
     const user = auth.currentUser;
     user?.delete();
     toast.error("Something went wrong");
@@ -118,9 +123,9 @@ export const passwordLogin = async ({ email, password }: LoginSchema) => {
     const dbUser = await getUserFromDB(user.email as string);
     if (!dbUser) {
       const newDbUser = await addUserToDB(user);
-      
+
       saveUserToLocalStorage(newDbUser!);
-    }else {
+    } else {
       saveUserToLocalStorage(dbUser);
     }
     toast.success("Login successful");
@@ -145,7 +150,7 @@ export const createAccount = async ({
       password
     );
     const newDbUser = await addUserToDB({ ...user, displayName: name });
-    
+
     saveUserToLocalStorage(newDbUser!);
     toast.success("Account created successfully");
     return `/dashboard`;

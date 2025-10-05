@@ -51,6 +51,10 @@ const getUserFromDB = async (email: string) => {
   }
 };
 
+const saveUserToLocalStorage = (user: User, dbUser: UserAuthResponse) => {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({...user, ...dbUser }));
+}
+
 export const onLoadUser = async () => {
   const storageUser = localStorage.getItem(AUTH_STORAGE_KEY);
   try {
@@ -67,9 +71,9 @@ export const onLoadUser = async () => {
       if (currentUser) {
         const dbUser = getUserFromDB(currentUser.email as string);
         if (!dbUser) {
-          await addUserToDB(currentUser);
+          const newDbUser = await addUserToDB(currentUser);
+          saveUserToLocalStorage(currentUser, newDbUser!);
         }
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(currentUser));
         return currentUser;
       }
     }
@@ -89,9 +93,9 @@ export const googleLogin = async () => {
     const user = data.user;
     const dbUser = await getUserFromDB(user.email as string);
     if (!dbUser) {
-      await addUserToDB(user);
+      const newDbUser = await addUserToDB(user);
+      saveUserToLocalStorage(user, newDbUser!);
     }
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
     toast.success("Login successful");
     return `/dashboard`;
   } catch (error) {
@@ -108,9 +112,9 @@ export const passwordLogin = async ({ email, password }: LoginSchema) => {
     const user = data.user;
     const dbUser = await getUserFromDB(user.email as string);
     if (!dbUser) {
-      await addUserToDB(user);
+      const newDbUser = await addUserToDB(user);
+      saveUserToLocalStorage(user, newDbUser!);
     }
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
     toast.success("Login successful");
     return `/dashboard`;
   } catch (e) {
@@ -132,8 +136,8 @@ export const createAccount = async ({
       email,
       password
     );
-    await addUserToDB({ ...user, displayName: name });
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    const newDbUser = await addUserToDB({ ...user, displayName: name });
+    saveUserToLocalStorage(user, newDbUser!);
     toast.success("Account created successfully");
     return `/dashboard`;
   } catch (e) {

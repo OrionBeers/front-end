@@ -1,20 +1,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import type { UserProfile } from "@/types/user";
+import type { ProfileSchema } from "@/lib/profile.schema";
+import { useForm } from "react-hook-form";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
   isEditing: boolean;
-  editName: string;
-  onNameChange: (name: string) => void;
+  form: ReturnType<typeof useForm<ProfileSchema>>;
 }
 
 export const ProfileHeader = ({
   profile,
   isEditing,
-  editName,
-  onNameChange,
+  form,
 }: ProfileHeaderProps) => (
   <div className='flex items-center gap-6 mb-6'>
     {/* Avatar */}
@@ -26,15 +27,22 @@ export const ProfileHeader = ({
     </div>
 
     <div className='grow flex flex-col gap-4 w-full'>
-      {/* Name field */}
-      <div className='space-y-2'>
-        <Label>Name</Label>
-        <Input
-          value={editName}
-          onChange={(e) => onNameChange(e.target.value)}
-          readOnly={!isEditing}
-        />
-      </div>
+      {/* Name field with validation */}
+      <FormField
+        control={form.control}
+        name='name'
+        render={({ field }) => (
+          <div className='space-y-2'>
+            <FormLabel htmlFor='name'>Name</FormLabel>
+            <Input
+              id='name'
+              {...field}
+              readOnly={!isEditing}
+            />
+            <FormMessage />
+          </div>
+        )}
+      />
 
       {/* Email field */}
       <div className='space-y-2'>

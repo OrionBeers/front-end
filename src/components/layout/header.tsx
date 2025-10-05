@@ -1,4 +1,5 @@
 import { useAuth } from "@/lib/auth.provider";
+import { cn } from "@/lib/utils";
 import { LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router";
@@ -21,13 +22,12 @@ export default function Header() {
   // TODO: Replace with actual navigation links
   const navigationLinks = [
     { href: "/about-us", label: "About us" },
-    { href: "#weather", label: "Weather Forecast" },
     { href: "/profile", label: "Profile" },
   ];
 
   return (
     <header className='bg-[#2196F3] text-black py-4 px-2 sm:px-4 border-b sticky top-0 z-50 dark:bg-[#2196F3]/90 dark:text-white backdrop-blur'>
-      <div className='max-w-7xl mx-auto flex items-center justify-between'>
+      <div className='container mx-auto flex items-center justify-between'>
         {/* Logo */}
         {/* TODO: Replace with actual logo image   */}
         <NavLink to='/dashboard' className='text-lg sm:text-xl font-bold'>
@@ -39,13 +39,20 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className='hidden md:flex items-center gap-6 lg:gap-8'>
             {navigationLinks.map((link) => (
-              <a
+              <NavLink
                 key={link.href}
-                href={link.href}
-                className='text-base hover:opacity-80 transition-opacity'
+                to={link.href}
+                className={({ isActive, isPending, isTransitioning }) =>
+                  cn(
+                    "text-base hover:opacity-80 transition-opacity",
+                    isActive && "font-semibold underline underline-offset-4",
+                    isPending && "opacity-70",
+                    isTransitioning && "opacity-50"
+                  )
+                }
               >
                 {link.label}
-              </a>
+              </NavLink>
             ))}
           </nav>
 
@@ -80,7 +87,15 @@ export default function Header() {
                       key={link.href}
                       to={link.href}
                       onClick={() => setOpen(false)}
-                      className='text-lg hover:opacity-80 transition-opacity py-2 px-2 rounded hover:bg-accent'
+                      className={({ isActive, isPending, isTransitioning }) =>
+                        cn(
+                          "text-lg hover:opacity-80 transition-opacity py-2 px-2 rounded hover:bg-accent",
+                          isActive &&
+                            "font-semibold underline underline-offset-4",
+                          isPending && "opacity-70",
+                          isTransitioning && "opacity-50"
+                        )
+                      }
                     >
                       {link.label}
                     </NavLink>

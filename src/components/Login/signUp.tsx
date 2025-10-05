@@ -13,7 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Form, FormField } from "../ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
 
 const SignUp = ({
@@ -51,53 +58,81 @@ const SignUp = ({
             <FormField
               control={form.control}
               name='name'
-              render={({ field }) => <Input placeholder='Name' {...field} />}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Name' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
               control={form.control}
               name='email'
-              render={({ field }) => <Input placeholder='Email' {...field} />}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Email' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
               control={form.control}
               name='password'
               render={({ field }) => (
-                <div className='relative'>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder='Password'
-                    {...field}
-                  />
-                  <Button
-                    variant='ghost'
-                    size='link'
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className='absolute right-3 top-1/2 -translate-y-1/2'
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </Button>
-                </div>
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <div className='relative'>
+                    <FormControl>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder='Password'
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      variant='ghost'
+                      size='link'
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2'
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
               )}
             />
             <FormField
               control={form.control}
               name='confirmPassword'
               render={({ field }) => (
-                <div className='relative'>
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder='Confirm password'
-                    {...field}
-                  />
-                  <Button
-                    variant='ghost'
-                    size='link'
-                    onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    className='absolute right-3 top-1/2 -translate-y-1/2'
-                  >
-                    {showConfirmPassword ? <EyeOff /> : <Eye />}
-                  </Button>
-                </div>
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <div className='relative'>
+                    <FormControl>
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder='Confirm password'
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      variant='ghost'
+                      size='link'
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2'
+                    >
+                      {showConfirmPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
               )}
             />
             <Button type='submit'>Submit</Button>

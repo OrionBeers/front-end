@@ -33,8 +33,7 @@ const Dashboard = () => {
     humidity: number;
   } | null>(null);
   
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [loadingMessage, setLoadingMessage] = useState("Search started...");
+  const [loadingMessage, _setLoadingMessage] = useState("Search started...");
 
   useEffect(() => {
     // update logic to display if user doesn't have a location saved in the db

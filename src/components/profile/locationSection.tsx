@@ -8,7 +8,7 @@ interface LocationSectionProps {
   isEditing: boolean;
   editLocations: Location[];
   onAddLocation: () => void;
-  onRemoveLocation: (index: number) => void;
+  onRemoveLocation: (id: string) => void;
 }
 
 export const LocationSection = ({
@@ -28,7 +28,7 @@ export const LocationSection = ({
               key={idx}
               location={loc}
               showRemove={isEditing}
-              onRemove={() => onRemoveLocation(idx)}
+              onRemove={() => onRemoveLocation(loc._id)}
             />
           ))}
         </div>

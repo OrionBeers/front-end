@@ -5,7 +5,7 @@ import searchSchema from "@/lib/search.schema";
 import type { Location } from "@/types/location";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import LocationPickerDialog from "../map/LocationPickerDialog";
 import { Button } from "../ui/button";
@@ -43,8 +43,10 @@ const months = [
 
 const SearchForm = ({
   onSearch,
+  fetchLocations,
 }: {
   onSearch?: (requestId?: string) => void;
+  fetchLocations: () => Promise<Location[] | undefined>;
 }) => {
   const [openLocation, setOpenLocation] = useState(false);
   const [locations, setLocations] = useState([] as Location[]);
@@ -59,17 +61,23 @@ const SearchForm = ({
     resolver: zodResolver(searchSchema),
   });
 
+  useEffect(() => {
+    fetchLocations().then(data => {
+      if (data) setLocations(data);
+    })
+  }, []);
+
   const onSubmit = async (data: SearchSchema) => {
     const body = {
       id_user: user._id,
       latitude:
         locations
-          .find((loc) => loc.displayName === data.location)
-          ?.lat?.toString() || "0",
+          .find((loc) => loc.display_name === data.location)
+          ?.latitude?.toString() || "0",
       longitude:
         locations
-          .find((loc) => loc.displayName === data.location)
-          ?.lng?.toString() || "0",
+          .find((loc) => loc.display_name === data.location)
+          ?.longitude?.toString() || "0",
       crop_type: data.crop,
       start_month: data.month,
     };

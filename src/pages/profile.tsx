@@ -1,4 +1,3 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import LocationPickerDialog from "@/components/map/LocationPickerDialog";
 import { LocationSection } from "@/components/profile/locationSection";
 import { ProfileHeader } from "@/components/profile/profileInfo";
@@ -7,9 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import api from "@/lib/api.axios";
 import { useAuth } from "@/lib/auth.provider";
-import ProfileSchema, { type ProfileSchema as ProfileFormSchema } from "@/lib/profile.schema";
+import ProfileSchema, {
+  type ProfileSchema as ProfileFormSchema,
+} from "@/lib/profile.schema";
 import type { Location } from "@/types/location";
 import type { UserProfile } from "@/types/user";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -42,20 +44,22 @@ const Profile = () => {
     mode: "onChange",
   });
 
+  const fetchLocations = async () => {
+    const { data } = await api.get(`/locations?id_user=${user._id}`);
+    console.log("Fetched locations:", data);
+    if (!data.length) {
+      return [];
+    }
+    return data;
+  };
+
   // Fetch profile on mount
   useEffect(() => {
     if (!user) return;
 
     const fetchProfile = async () => {
       try {
-        // const { data } = await axiosInstance.get("/locations");
-        const data = [
-          {
-            displayName: "New York, USA",
-            lat: 40.7128,
-            lng: -74.006,
-          },
-        ] as Location[]; // TODO: remove after backend is ready
+        const data = await fetchLocations();
         const { data: profile } = await api.get("/users", {
           params: { email: user.email, id_user: user._id },
         });
@@ -84,9 +88,11 @@ const Profile = () => {
 
   useEffect(() => {
     if (
-      profile?.locations?.some((it) =>
-        editLocations.every((el) => el.lat !== it.lat && el.lng !== it.lng)
-      )
+      profile?.locations?.some((it) => {
+        const exists = editLocations.find((loc) => loc._id === it._id);
+        const changed = exists && JSON.stringify(exists) !== JSON.stringify(it);
+        return !exists || changed;
+      })
     ) {
       setEditLocations(profile?.locations || []);
     }
@@ -103,8 +109,6 @@ const Profile = () => {
     const updateData: Partial<UserProfile> = {
       name: data.name,
       email: profile.email,
-      // edit locations separate (it's a different endpoint)
-      // locations: editLocations,
     };
 
     try {
@@ -125,9 +129,19 @@ const Profile = () => {
     setShowLocationPicker(true);
   };
 
-  const handleRemoveLocation = (index: number) => {
-    // create logic to remove location when api is ready
-    setEditLocations((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveLocation = async (_id: string) => {
+    try {
+      const { data } = await api.delete(
+        `/locations?id_location=${_id}&id_user=${user._id}`
+      );
+      await fetchLocations();
+      setEditLocations(data);
+      if (profile) setProfile({ ...profile, locations: data });
+      toast.success("Location removed");
+    } catch (e) {
+      toast.error("Failed to remove location");
+      console.log(e);
+    }
   };
 
   const handleStartEditing = () => {
@@ -162,7 +176,10 @@ const Profile = () => {
 
         <CardContent className='space-y-6'>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(handleSave)}
+              className='space-y-6'
+            >
               <ProfileHeader
                 profile={profile}
                 isEditing={isEditing}
@@ -179,10 +196,14 @@ const Profile = () => {
               {/* Action buttons */}
               {isEditing && (
                 <div className='flex gap-4 justify-end pt-4'>
-                  <Button type="button" variant='outline' onClick={handleCancel}>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={handleCancel}
+                  >
                     Cancel
                   </Button>
-                  <Button type="submit">Save</Button>
+                  <Button type='submit'>Save</Button>
                 </div>
               )}
             </form>

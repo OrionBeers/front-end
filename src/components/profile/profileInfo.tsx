@@ -28,7 +28,7 @@ export const ProfileHeader = ({
     <div className='flex justify-center'>
       <Avatar className='h-32 w-32'>
         <AvatarImage src={profile.avatar} alt={profile.name} />
-        <AvatarFallback>{profile.name[0]?.toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{profile.email[0]?.toUpperCase()}</AvatarFallback>
       </Avatar>
     </div>
 

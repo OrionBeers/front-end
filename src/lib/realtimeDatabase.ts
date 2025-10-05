@@ -6,14 +6,29 @@ interface ListenToHistoryParams {
   onUpdate?: (data: any) => void;
 }
 
+// Set to track currently listening paths
+const activeListeners = new Set<string>();
+
 export function listenToHistory({
   idUser,
   idRequest,
   onUpdate,
 }: ListenToHistoryParams) {
+  const path = `${idUser}/${idRequest}`;
+  
+  // If already listening, do nothing
+  if (activeListeners.has(path)) {
+    console.log("Already listening to history at:", path);
+    return;
+  }
+
   const db = getDatabase();
-  const historyDataRef = ref(db, `${idUser}/${idRequest}`);
-  console.log("Listening to history at:", `${idUser}/${idRequest}`);
+  const historyDataRef = ref(db, path);
+  console.log("Listening to history at:", path);
+  
+  // Register to the Set before adding the listener
+  activeListeners.add(path);
+  
   onValue(historyDataRef, (snapshot) => {
     const data = snapshot.val();
     onUpdate?.(data);
@@ -27,8 +42,25 @@ export function unListenToHistory({
   idUser: string;
   idRequest: string;
 }) {
-  console.log("Unlistening to history at:", `${idUser}/${idRequest}`);
+  const path = `${idUser}/${idRequest}`;
+  console.log("Unlistening to history at:", path);
+  
   const db = getDatabase();
-  const historyDataRef = ref(db, `${idUser}/${idRequest}`);
+  const historyDataRef = ref(db, path);
   off(historyDataRef);
+  
+  // Also remove from the Set
+  activeListeners.delete(path);
+}
+
+// Function to check if a specific path is currently being listened to
+export function isListeningToHistory({
+  idUser,
+  idRequest,
+}: {
+  idUser: string;
+  idRequest: string;
+}): boolean {
+  const path = `${idUser}/${idRequest}`;
+  return activeListeners.has(path);
 }

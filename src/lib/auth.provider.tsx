@@ -2,20 +2,21 @@ import * as auth from "@/assets/scripts/auth";
 import { Toaster } from "@/components/ui/sonner";
 import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Outlet, redirect } from "react-router";
+import { Outlet, redirect, useNavigate } from "react-router";
 import { toast } from "sonner";
-import type { LoginSchema } from "./login.schema";
+import type { SignUpSchema } from "./ signup.schema";
 
 type LoginParams =
-  | { type: "credentials"; credentials: LoginSchema }
+  | { type: "credentials"; credentials: SignUpSchema }
   | { type: "google" };
 
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (val: LoginParams) => Promise<Response | undefined>;
   logout: () => void;
-  signUp: (val: LoginSchema) => Promise<Response | undefined>;
+  signUp: (val: SignUpSchema) => Promise<Response | undefined>;
   user: User;
+  setIsAuthenticated: (val: boolean) => void;
 }
 
 const authContext = createContext<AuthContextType>({} as AuthContextType);
@@ -23,20 +24,21 @@ const authContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState({} as User);
+  const navigate = useNavigate();
 
   useEffect(() => {
     auth.onLoadUser().then((data) => {
-      if (Object.keys(data).length) {
-        setUser(data);
-        setIsAuthenticated(true);
-      } else {
+      if (!data) {
         setIsAuthenticated(false);
+      } else {
+        setIsAuthenticated(true);
+        setUser(data);
+        navigate('/dashboard')
       }
-      console.log({ data });
     });
   }, []);
 
-  const signUp = async (credentials: LoginSchema) => {
+  const signUp = async (credentials: SignUpSchema) => {
     const result = await auth.createAccount(credentials);
     if (result) {
       setIsAuthenticated(true);
@@ -72,14 +74,21 @@ export const AuthProvider = () => {
     const result = await auth.logOut();
     if (result) {
       setIsAuthenticated(false);
-      
+
       return;
     }
   };
 
   return (
     <authContext.Provider
-      value={{ isAuthenticated, login, logout, signUp, user }}
+      value={{
+        isAuthenticated,
+        login,
+        logout,
+        signUp,
+        user,
+        setIsAuthenticated,
+      }}
     >
       <Outlet />
       <Toaster />

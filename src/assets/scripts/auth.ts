@@ -1,6 +1,7 @@
 import type { SignUpSchema } from "@/lib/ signup.schema";
 import authAxios from "@/lib/auth.axios";
 import type { LoginSchema } from "@/lib/login.schema";
+import type { UserAuthResponse } from "@/types/user";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -13,7 +14,6 @@ import {
 } from "firebase/auth";
 import { toast } from "sonner";
 import { auth } from "./firebase";
-import type { UserAuthResponse } from "@/types/user";
 
 const AUTH_STORAGE_KEY = "orion.user.data";
 
@@ -35,13 +35,20 @@ const addUserToDB = async (user: User) => {
 };
 
 const getUserFromDB = async (email: string) => {
-  const { data } = await authAxios.get("/users", {
-    params: {
-      email,
-    },
-  });
-  if (data._id) return data;
-  return null;
+  try {
+    const { data } = await authAxios.get("/users", {
+      params: {
+        email,
+      },
+      validateStatus: (status) => {
+        return (status >= 200 && status < 300) || status === 404;
+      },
+    });
+    if (data._id) return data;
+    return null;
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 export const onLoadUser = async () => {
@@ -56,7 +63,6 @@ export const onLoadUser = async () => {
       return user;
     } else {
       const { currentUser } = getAuth();
-      console.log({ currentUser });
 
       if (currentUser) {
         const dbUser = getUserFromDB(currentUser.email as string);
@@ -68,10 +74,10 @@ export const onLoadUser = async () => {
       }
     }
 
-    return {};
+    return null;
   } catch (e) {
     console.log(e);
-    return {};
+    return null;
   }
 };
 

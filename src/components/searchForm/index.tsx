@@ -101,9 +101,6 @@ const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
               <LocationPickerDialog
                 open={openLocation}
                 setOpen={setOpenLocation}
-                onLocationSelect={(location) => {
-                  console.log(location);
-                }}
               />
             </div>
           )}

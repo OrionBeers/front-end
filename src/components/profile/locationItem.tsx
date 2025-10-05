@@ -19,11 +19,11 @@ export const LocationItem = ({
       <CardContent className="flex flex-col gap-0.5 px-4 py-1">
         <div className="flex flex-row items-start justify-between">
           <div className="flex flex-col">
-            {location.displayName && (
-              <div className="text-sm font-semibold mb-0.5">{location.displayName}</div>
+            {location.display_name && (
+              <div className="text-sm font-semibold mb-0.5">{location.display_name}</div>
             )}
             <div className="text-xs text-muted-foreground">
-              {location.lat}, {location.lng}
+              {location.latitude}, {location.longitude}
             </div>
           </div>
           {showRemove ? (

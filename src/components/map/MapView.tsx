@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import type { Location } from "../../types/location";
+import type { CreateLocation } from "../../types/location";
 
 // default icon settings for Leaflet
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
 });
 
 interface MapViewProps {
-  locations: Location[];
+  locations: CreateLocation[];
   center?: [number, number];
   zoom?: number;
   onMapClick?: (lat: number, lng: number) => void;
@@ -73,13 +73,16 @@ export default function MapView({
       
       {locations.length > 0 && (
         <ChangeView 
-          center={[locations[locations.length - 1].lat, locations[locations.length - 1].lng]} 
+          center={[locations[locations.length - 1].latitude, locations[locations.length - 1].longitude]} 
           zoom={5} 
         />
       )}
 
-      {locations.map((location) => (
-        <Marker key={location.id} position={[location.lat, location.lng]} />
+      {locations.map((location, idx) => (
+        <Marker
+          key={idx}
+          position={[location.latitude, location.longitude]}
+        />
       ))}
     </MapContainer>
   );

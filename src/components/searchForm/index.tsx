@@ -6,7 +6,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import LocationPickerDialog from "../map/LocationPickerDialog";
 import { Button } from "../ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
 import {
   Select,
@@ -56,7 +63,10 @@ const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel htmlFor='crop'>Crop</FormLabel>
-              <Input id='crop' {...field} />
+              <FormControl>
+                <Input id='crop' {...field} />
+              </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -64,23 +74,26 @@ const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
           control={form.control}
           name='location'
           render={({ field }) => (
-            <div className="flex items-end w-full">
-              <FormItem className="grow">
-              <FormLabel>Farm</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Choose your farm' />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value='farm1'>Farm 1</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormItem>
+            <div className='flex items-end w-full'>
+              <FormItem className='grow'>
+                <FormLabel>Farm</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder='Choose your farm' />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value='farm1'>Farm 1</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
               <Button
                 className='rounded-full ml-2'
-                type="button"
+                type='button'
                 onClick={() => setOpenLocation(true)}
               >
                 <Plus />

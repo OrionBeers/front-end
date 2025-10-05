@@ -14,7 +14,14 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Form, FormField } from "../ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
 import SignUp from "./signUp";
 
@@ -56,27 +63,41 @@ const Login = () => {
             <FormField
               control={form.control}
               name='email'
-              render={({ field }) => <Input placeholder='Email' {...field} />}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Email' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
               control={form.control}
               name='password'
               render={({ field }) => (
-                <div className='relative'>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder='Password'
-                    {...field}
-                  />
-                  <Button
-                    variant='ghost'
-                    size='link'
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </Button>
-                </div>
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <div className='relative'>
+                    <FormControl>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder='Password'
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      variant='ghost'
+                      size='link'
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2'
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
               )}
             />
             <Button type='submit'>Submit</Button>

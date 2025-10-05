@@ -1,8 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { Location } from "../../types/location";
 import locationSchema, { type LocationSchema } from "../../lib/location.schema";
+import type { Location } from "../../types/location";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -11,9 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Form, FormField, FormMessage } from "../ui/form";
+import { Form, FormField, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import MapView from "./MapView";
 
 interface LocationPickerDialogProps {
@@ -37,7 +36,7 @@ export default function LocationPickerDialog({
       longitude: "",
     },
     resolver: zodResolver(locationSchema),
-    mode: "onSubmit", // Only validate on submit 
+    mode: "onSubmit", // Only validate on submit
   });
 
   const latitudeQuery = form.watch("latitude");
@@ -48,21 +47,23 @@ export default function LocationPickerDialog({
   useEffect(() => {
     if (open) {
       // Clear everything immediately when opening
-      form.reset({
-        farmName: "",
-        latitude: "",
-        longitude: "",
-      }, {
-        keepErrors: false,
-        keepDirty: false,
-        keepValues: false,
-      });
+      form.reset(
+        {
+          farmName: "",
+          latitude: "",
+          longitude: "",
+        },
+        {
+          keepErrors: false,
+          keepDirty: false,
+          keepValues: false,
+        }
+      );
       setSelectedLocations([]);
       setSkipCoordinateUpdate(false);
       // setSkipSearchUpdate(false);
     }
   }, [open, form]);
-
 
   // Handle location update (from coordinates input or map click)
   const handleLocationUpdate = (lat: number, lng: number) => {
@@ -75,8 +76,12 @@ export default function LocationPickerDialog({
 
     setSelectedLocations([location]);
     setSkipCoordinateUpdate(true);
-    form.setValue("latitude", location.lat.toFixed(6), { shouldValidate: true });
-    form.setValue("longitude", location.lng.toFixed(6), { shouldValidate: true });
+    form.setValue("latitude", location.lat.toFixed(6), {
+      shouldValidate: true,
+    });
+    form.setValue("longitude", location.lng.toFixed(6), {
+      shouldValidate: true,
+    });
   };
 
   // Auto-update map when coordinates change
@@ -124,13 +129,12 @@ export default function LocationPickerDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitudeQuery, longitudeQuery]);
 
-
   const handleSaveLocation = async () => {
     const isValid = await form.trigger();
     if (!isValid) {
       return;
     }
-    
+
     if (selectedLocations.length > 0) {
       const locationToSave = {
         ...selectedLocations[0],
@@ -158,20 +162,47 @@ export default function LocationPickerDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-6'>
-          <Form {...form}>
-            <form className='space-y-6'>
+        <Form {...form}>
+          <form
+            className='space-y-6'
+            onSubmit={form.handleSubmit(handleSaveLocation)}
+          >
+            <div className='space-y-2'>
+              <FormField
+                control={form.control}
+                name='farmName'
+                render={({ field }) => (
+                  <div>
+                    <FormLabel htmlFor='farmName' className='mb-2'>
+                      Farm name
+                    </FormLabel>
+                    <Input
+                      id='farmName'
+                      placeholder='Farm name'
+                      autoComplete='off'
+                      {...field}
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
+            </div>
+
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <Label htmlFor='farmName'>Farm name</Label>
                 <FormField
                   control={form.control}
-                  name='farmName'
+                  name='latitude'
                   render={({ field }) => (
                     <div>
+                      <FormLabel htmlFor='latitude' className='mb-2'>
+                        Latitude
+                      </FormLabel>
                       <Input
-                        id='farmName'
-                        placeholder='Farm name'
-                        autoComplete='off'
+                        id='latitude'
+                        placeholder='e.g. 35.6762'
+                        type='number'
+                        step='any'
                         {...field}
                       />
                       <FormMessage />
@@ -180,72 +211,55 @@ export default function LocationPickerDialog({
                 />
               </div>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='latitude'>Latitude</Label>
-                  <FormField
-                    control={form.control}
-                    name='latitude'
-                    render={({ field }) => (
-                      <div>
-                        <Input
-                          id='latitude'
-                          placeholder='e.g. 35.6762'
-                          type='number'
-                          step='any'
-                          {...field}
-                        />
-                        <FormMessage />
-                      </div>
-                    )}
-                  />
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='longitude'>Longitude</Label>
-                  <FormField
-                    control={form.control}
-                    name='longitude'
-                    render={({ field }) => (
-                      <div>
-                        <Input
-                          id='longitude'
-                          placeholder='e.g. 139.6503'
-                          type='number'
-                          step='any'
-                          {...field}
-                        />
-                        <FormMessage />
-                      </div>
-                    )}
-                  />
-                </div>
+              <div className='space-y-2'>
+                <FormField
+                  control={form.control}
+                  name='longitude'
+                  render={({ field }) => (
+                    <div>
+                      <FormLabel htmlFor='longitude' className='mb-2'>
+                        Longitude
+                      </FormLabel>
+                      <Input
+                        id='longitude'
+                        placeholder='e.g. 139.6503'
+                        type='number'
+                        step='any'
+                        {...field}
+                      />
+                      <FormMessage />
+                    </div>
+                  )}
+                />
               </div>
-            </form>
-          </Form>
-
-          <div
-            className='border rounded-lg overflow-hidden'
-            style={{ height: "400px" }}
-          >
-            <MapView
-              locations={selectedLocations}
-              onMapClick={handleLocationUpdate}
-              clickable={true}
-            />
-          </div>
-
-          <div className='flex justify-end'>
-            <Button
-              onClick={handleSaveLocation}
-              disabled={selectedLocations.length === 0 || !farmName.trim() || !latitudeQuery || !longitudeQuery}
-              size='lg'
-              className='hover:opacity-90 transition-opacity'
+            </div>
+            <div
+              className='border rounded-lg overflow-hidden'
+              style={{ height: "400px" }}
             >
-              Save Location
-            </Button>
-          </div>
-        </div>
+              <MapView
+                locations={selectedLocations}
+                onMapClick={handleLocationUpdate}
+                clickable={true}
+              />
+            </div>
+            <div className='flex justify-end'>
+              <Button
+                onClick={handleSaveLocation}
+                disabled={
+                  selectedLocations.length === 0 ||
+                  !farmName.trim() ||
+                  !latitudeQuery ||
+                  !longitudeQuery
+                }
+                size='lg'
+                className='hover:opacity-90 transition-opacity'
+              >
+                Save Location
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

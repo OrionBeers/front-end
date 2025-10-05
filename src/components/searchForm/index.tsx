@@ -1,7 +1,10 @@
 import type { SearchSchema } from "@/lib/search.schema";
 import searchSchema from "@/lib/search.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import LocationPickerDialog from "../map/LocationPickerDialog";
 import { Button } from "../ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
@@ -28,9 +31,8 @@ const months = [
   { value: "december", label: "December" },
 ];
 
-const SearchForm = ({ onSearch }: { 
-  onSearch?: () => void;
-}) => {
+const SearchForm = ({ onSearch }: { onSearch?: () => void }) => {
+  const [openLocation, setOpenLocation] = useState(false);
   const form = useForm<SearchSchema>({
     defaultValues: {
       crop: "",
@@ -62,7 +64,8 @@ const SearchForm = ({ onSearch }: {
           control={form.control}
           name='location'
           render={({ field }) => (
-            <FormItem>
+            <div className="flex items-end w-full">
+              <FormItem className="grow">
               <FormLabel>Farm</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
@@ -75,6 +78,21 @@ const SearchForm = ({ onSearch }: {
                 </SelectContent>
               </Select>
             </FormItem>
+              <Button
+                className='rounded-full ml-2'
+                type="button"
+                onClick={() => setOpenLocation(true)}
+              >
+                <Plus />
+              </Button>
+              <LocationPickerDialog
+                open={openLocation}
+                setOpen={setOpenLocation}
+                onLocationSelect={(location) => {
+                  console.log(location);
+                }}
+              />
+            </div>
           )}
         />
         <FormField

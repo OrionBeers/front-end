@@ -32,6 +32,8 @@ const Dashboard = () => {
     windSpeed: number;
     humidity: number;
   } | null>(null);
+  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingMessage, setLoadingMessage] = useState("Search started...");
 
   useEffect(() => {

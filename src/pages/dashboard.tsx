@@ -1,4 +1,5 @@
 import StatusCalendar from "@/components/calendar";
+import CalendarSkeleton from "@/components/calendar/skelton";
 import LocationPickerDialog from "@/components/map/LocationPickerDialog";
 import SearchForm from "@/components/searchForm";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [newSearch, setNewSearch] = useState(false);
+  const [isLoadingCalendar, setIsLoadingCalendar] = useState(true);
   const [selectedDate, setSelectedDate] = useState<{
     temperature: number;
     moisture: number;
@@ -30,11 +32,20 @@ const Dashboard = () => {
     windSpeed: number;
     humidity: number;
   } | null>(null);
+  
+  const [loadingMessage, _setLoadingMessage] = useState("Search started...");
 
   useEffect(() => {
     // update logic to display if user doesn't have a location saved in the db
     setShowOnboarding(true);
     setHistory([]);
+    
+    // TODO: Simulate calendar data loading
+    const timer = setTimeout(() => {
+      setIsLoadingCalendar(false);
+    }, 2000); // 2 seconds loading simulation
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // useEffect(() => {
@@ -188,19 +199,24 @@ const Dashboard = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="max-w-[100%]"><StatusCalendar
-        list={list}
-        onDaySelect={(date) => {
-          const month = date
-            .toLocaleDateString("en-US", { month: "long" })
-            .toLowerCase();
-          const info = list[month as keyof typeof list]?.find(
-            (d) => d.date.toDateString() === date.toDateString()
-          );
-          setSelectedDate(info ? info.data : null);
-        }}
-      />
-      {selectedDate && (
+      <div className="max-w-[100%]">
+        {isLoadingCalendar ? (
+          <CalendarSkeleton loadingMessage={loadingMessage} />
+        ) : (
+          <StatusCalendar
+            list={list}
+            onDaySelect={(date) => {
+              const month = date
+                .toLocaleDateString("en-US", { month: "long" })
+                .toLowerCase();
+              const info = list[month as keyof typeof list]?.find(
+                (d) => d.date.toDateString() === date.toDateString()
+              );
+              setSelectedDate(info ? info.data : null);
+            }}
+          />
+        )}
+      {selectedDate && !isLoadingCalendar && (
         <Card className='max-w-md mx-auto mt-10'>
           <CardHeader>
             <CardTitle>

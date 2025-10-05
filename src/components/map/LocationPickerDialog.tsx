@@ -245,7 +245,7 @@ export default function LocationPickerDialog({
             </div>
             <div className='flex justify-end'>
               <Button
-                onClick={handleSaveLocation}
+                type="submit"
                 disabled={
                   selectedLocations.length === 0 ||
                   !farmName.trim() ||

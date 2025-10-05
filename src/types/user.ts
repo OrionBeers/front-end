@@ -9,4 +9,14 @@ type UserAuthResponse = {
   updated_at: string;
 };
 
-export type { UserAuthResponse }
+type UserProfile = UserAuthResponse & {
+  location?: {
+    latitude: number;
+    longitude: number;
+    country?: string;
+    region?: string;
+    displayName?: string;
+  };
+};
+
+export type { UserAuthResponse, UserProfile }

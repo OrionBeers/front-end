@@ -22,7 +22,7 @@ export default function Header() {
   const navigationLinks = [
     { href: "/about-us", label: "About us" },
     { href: "#weather", label: "Weather Forecast" },
-    { href: "#profile", label: "Profile" },
+    { href: "/profile", label: "Profile" },
   ];
 
   return (

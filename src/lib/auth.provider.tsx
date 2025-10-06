@@ -28,6 +28,18 @@ export const AuthProvider = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    auth.onLoadUser().then((data) => {
+        if (!data) {
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(true);
+          setUser(data as UserAuthResponse);
+          navigate("/dashboard");
+        }
+      });
+  })
+
+  useEffect(() => {
     if (isAuthenticated) {
       auth.onLoadUser().then((data) => {
         if (!data) {

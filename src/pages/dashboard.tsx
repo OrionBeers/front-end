@@ -108,9 +108,10 @@ const Dashboard = () => {
           </CardDescription>
         </CardHeader>
         <SearchForm
-          onSearch={() => {
+          onSearch={async () => {
             setIsLoading(true);
-            fetchRequests();
+            await fetchRequests();
+            setIsLoading(false);
           }}
           fetchLocations={fetchLocations}
         />
@@ -140,10 +141,11 @@ const Dashboard = () => {
           <DialogContent className='max-w-[700px]'>
             <DialogTitle>New Search</DialogTitle>
             <SearchForm
-              onSearch={() => {
+              onSearch={async () => {
                 setNewSearch(false);
                 setIsLoading(true);
-                fetchRequests();
+                await fetchRequests();
+                setIsLoading(false)
               }}
               fetchLocations={fetchLocations}
             />

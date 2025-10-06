@@ -76,11 +76,11 @@ const SearchForm = ({
       id_user: user._id,
       latitude:
         locations
-          .find((loc) => loc.display_name === data.location)
+          .find((loc) => loc._id === data.location)
           ?.latitude?.toString() || "0",
       longitude:
         locations
-          .find((loc) => loc.display_name === data.location)
+          .find((loc) => loc._id === data.location)
           ?.longitude?.toString() || "0",
       crop_type: data.crop,
       start_month: data.month,

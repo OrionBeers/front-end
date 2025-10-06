@@ -28,16 +28,18 @@ export const AuthProvider = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    auth.onLoadUser().then((data) => {
-      if (!data) {
-        setIsAuthenticated(false);
-      } else {
-        setIsAuthenticated(true);
-        setUser(data as UserAuthResponse);
-        navigate("/dashboard");
-      }
-    });
-  }, []);
+    if (isAuthenticated) {
+      auth.onLoadUser().then((data) => {
+        if (!data) {
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(true);
+          setUser(data as UserAuthResponse);
+          navigate("/dashboard");
+        }
+      });
+    }
+  }, [isAuthenticated]);
 
   const signUp = async (credentials: SignUpSchema) => {
     const result = await auth.createAccount(credentials);

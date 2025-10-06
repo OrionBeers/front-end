@@ -61,7 +61,6 @@ const Dashboard = () => {
     const { data } = await api.get(`/dashboard?id_user=${user._id}`);
     setRequests(data || []);
     if (data.length) await fetchCrop(data[0]?._id);
-
   };
 
   const fetchLocations = async () => {
@@ -145,7 +144,7 @@ const Dashboard = () => {
                 setNewSearch(false);
                 setIsLoading(true);
                 await fetchRequests();
-                setIsLoading(false)
+                setIsLoading(false);
               }}
               fetchLocations={fetchLocations}
             />
